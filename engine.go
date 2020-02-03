@@ -65,9 +65,9 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	// xBoard()
+	xBoard()
 	// computerVSHuman()
-	computerVSComputer()
+	// computerVSComputer()
 }
 
 var wrt = bufio.NewWriter(os.Stdout)
@@ -599,24 +599,14 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 			newValue := Max(value, res.score)
 
 			if newValue > value {
-				// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-				value = newValue
-				bestMove.move = mv.move
-				bestMove.score = newValue
-
-				// 	if newPos.Status() == chess.Checkmate {
-				// 		maxHigh = value
-				// 		break
-				// 	}
-				// }
+				if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
+					value = newValue
+					bestMove.move = mv.move
+					bestMove.score = newValue
+				}
 			}
 			maxHigh = Max(maxHigh, value)
-
-			// if depth == startDepth {
-			// 	log.Println(fmt.Sprintf("%v\t%v", maxHigh, minLow))
-			// }
-
-			if maxHigh >= minLow+100 {
+			if maxHigh >= minLow {
 				break
 			}
 
@@ -626,19 +616,15 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 			newValue := Min(value, res.score)
 
 			if newValue < value {
-				// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-				value = newValue
-				bestMove.move = mv.move
-				bestMove.score = newValue
+				if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
+					value = newValue
+					bestMove.move = mv.move
+					bestMove.score = newValue
 
-				// if newPos.Status() == chess.Checkmate {
-				// minLow = value
-				// break
-				// }
-				// }
+				}
 			}
 			minLow = Min(minLow, value)
-			if minLow <= maxHigh {
+			if maxHigh >= minLow {
 				break
 			}
 		}
