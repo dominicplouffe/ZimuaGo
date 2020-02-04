@@ -655,15 +655,34 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	bestMove := legalMoves[0]
 	value := -99999999
 
+	allowLMR := depth >= 3 && !inCheck
+
 	for _, mv := range legalMoves {
 		moveCount++
 		zg.moveSearched++
 
 		newDepth := depth - 1
+		isLMR := false
+
+		if allowLMR && moveCount >= 4 && !mv.capture && !mv.promotion {
+			isLMR = true
+			newDepth--
+
+			if moveCount >= 6 {
+				newDepth--
+			}
+		}
+
 		newPos := pos.Update(&mv.move)
 
 		res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, false, startDepth, mv.inCheck, false)
-		newValue := Max(value, -res.score)
+		score := -res.score
+		if score > alpha && isLMR {
+			res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, false, startDepth, mv.inCheck, false)
+			score = -res.score
+		}
+
+		newValue := Max(value, score)
 
 		if newValue > value {
 			status := newPos.Status()
