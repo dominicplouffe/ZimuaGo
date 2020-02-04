@@ -555,16 +555,17 @@ func (zg *ZimuaGame) qsearch(pos *chess.Position, standPat int) int {
 	return standPat
 }
 
-func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minLow int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
+func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, alpha int, beta int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
 
 	if depth == 0 {
 		score := 0
 		if pos.Status() == chess.Checkmate {
-			if pos.Turn() == chess.White {
-				score = -99999998
-			} else {
-				score = 99999998
-			}
+			score = 99999998
+			// if pos.Turn() == chess.White {
+			// 	score = -99999998
+			// } else {
+			// 	score = 99999998
+			// }
 		} else {
 			score = zg.pieceScoring(pos.Board())
 		}
@@ -588,10 +589,7 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 	moveCount := 0
 	bestMove := legalMoves[0]
 	value := -99999999
-
-	if !maxPlayer {
-		value = 99999999
-	}
+	// allow_lmr := depth >= 3 && !inCheck
 
 	for _, mv := range legalMoves {
 		moveCount++
@@ -599,38 +597,23 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 
 		newDepth := depth - 1
 		newPos := pos.Update(&mv.move)
-		if maxPlayer {
-			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, false, startDepth, mv.inCheck, false)
 
-			newValue := Max(value, res.score)
+		res := zg.alphaBeta(newPos, newDepth, -beta, -alpha, false, startDepth, mv.inCheck, false)
 
-			if newValue > value {
-				// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-				value = newValue
-				bestMove.move = mv.move
-				bestMove.score = newValue
-			}
-			maxHigh = Max(maxHigh, value)
+		newValue := Max(value, -res.score)
 
-			if maxHigh >= minLow {
-				break
-			}
-
-		} else {
-			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, true, startDepth, mv.inCheck, false)
-
-			newValue := Min(value, res.score)
-
-			if newValue < value {
-				value = newValue
-				bestMove.move = mv.move
-				bestMove.score = newValue
-			}
-			minLow = Min(minLow, value)
-			if maxHigh >= minLow {
-				break
-			}
+		if newValue > value {
+			// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
+			value = newValue
+			bestMove.move = mv.move
+			bestMove.score = newValue
 		}
+		alpha = Max(alpha, value)
+
+		if alpha >= beta {
+			break
+		}
+
 	}
 
 	return bestMove
