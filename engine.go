@@ -18,10 +18,12 @@ import (
 
 // MoveScore is used to store the moves importance when generating the list of moves
 type MoveScore struct {
-	move    chess.Move
-	score   int
-	killer  bool
-	inCheck bool
+	move      chess.Move
+	score     int
+	killer    bool
+	inCheck   bool
+	capture   bool
+	promotion bool
 }
 
 // TimeControl is used to track the amount of time the engine can use to make a move
@@ -76,7 +78,8 @@ func main() {
 	} else if len(args) >= 1 && args[0] == "-human" {
 		computerVSHuman()
 	} else {
-		fmt.Println("Usage: ./engine.go [-uci|-cpu|-human] [-profile]")
+		// fmt.Println("Usage: ./engine.go [-uci|-cpu|-human] [-profile]")
+		computerVSComputer()
 	}
 
 }
@@ -413,10 +416,12 @@ func getTimeControl(totalTime float64) TimeControl {
 
 func (zg *ZimuaGame) createMoveScore(move chess.Move, score int, killer bool) MoveScore {
 	return MoveScore{
-		move:    move,
-		score:   score,
-		killer:  killer,
-		inCheck: move.HasTag(chess.Check),
+		move:      move,
+		score:     score,
+		killer:    killer,
+		inCheck:   move.HasTag(chess.Check),
+		capture:   false,
+		promotion: false,
 	}
 }
 
@@ -473,6 +478,8 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		}
 
 		ms := zg.createMoveScore(*mv, score, false)
+		ms.capture = isCapture
+		ms.promotion = isPromo
 
 		moves = append(moves, ms)
 	}
@@ -555,21 +562,25 @@ func (zg *ZimuaGame) qsearch(pos *chess.Position, standPat int) int {
 	return standPat
 }
 
-func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, alpha int, beta int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
+func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minLow int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
 
 	if depth == 0 {
-		score := 0
 		if pos.Status() == chess.Checkmate {
-			score = 99999998
-			// if pos.Turn() == chess.White {
-			// 	score = -99999998
-			// } else {
-			// 	score = 99999998
-			// }
-		} else {
-			score = zg.pieceScoring(pos.Board())
+			if pos.Turn() == chess.White {
+				return MoveScore{
+					score: zg.minValue,
+				}
+			}
+			return MoveScore{
+				score: zg.maxValue,
+			}
 		}
-		mv := zg.createMoveScore(zg.nilMove, score, false)
+
+		data, _ := pos.Board().MarshalBinary()
+		_ = data
+		mv := MoveScore{
+			score: zg.pieceScoring(pos.Board()),
+		}
 		return mv
 	}
 
@@ -589,7 +600,9 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, alpha int, beta i
 	moveCount := 0
 	bestMove := legalMoves[0]
 	value := -99999999
-	// allow_lmr := depth >= 3 && !inCheck
+	if !maxPlayer {
+		value = 99999999
+	}
 
 	for _, mv := range legalMoves {
 		moveCount++
@@ -598,22 +611,43 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, alpha int, beta i
 		newDepth := depth - 1
 		newPos := pos.Update(&mv.move)
 
-		res := zg.alphaBeta(newPos, newDepth, -beta, -alpha, false, startDepth, mv.inCheck, false)
+		if maxPlayer {
+			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, false, startDepth, mv.inCheck, false)
 
-		newValue := Max(value, -res.score)
+			newValue := Max(value, res.score)
 
-		if newValue > value {
-			// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-			value = newValue
-			bestMove.move = mv.move
-			bestMove.score = newValue
+			if newValue > value {
+				status := newPos.Status()
+				if status != chess.Stalemate && status != chess.ThreefoldRepetition {
+					value = newValue
+					bestMove.move = mv.move
+					bestMove.score = newValue
+				}
+			}
+			maxHigh = Max(maxHigh, value)
+
+			if maxHigh >= minLow+100 {
+				break
+			}
+
+		} else {
+			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, true, startDepth, mv.inCheck, false)
+
+			newValue := Min(value, res.score)
+
+			if newValue < value {
+				status := newPos.Status()
+				if status != chess.Stalemate && status != chess.ThreefoldRepetition {
+					value = newValue
+					bestMove.move = mv.move
+					bestMove.score = newValue
+				}
+			}
+			minLow = Min(minLow, value)
+			if minLow <= maxHigh {
+				break
+			}
 		}
-		alpha = Max(alpha, value)
-
-		if alpha >= beta {
-			break
-		}
-
 	}
 
 	return bestMove
