@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/notnil/chess"
+	"github.com/dominicplouffe/chess"
 )
 
 // Test Example
@@ -106,4 +106,16 @@ func TestNegaMax(t *testing.T) {
 	if res.move.String() != "b1c3" || res.score != 123 {
 		t.Error("Depth 3 is incorrect")
 	}
+}
+
+// Some testing for null moves
+func TestNullMove(t *testing.T) {
+	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	newPos := game.Position().NullMove()
+
+	if newPos.Turn() != chess.Black {
+		t.Error("Null Move did not work")
+	}
+
 }

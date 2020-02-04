@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/notnil/chess"
+	"github.com/dominicplouffe/chess"
 )
 
 // MoveScore is used to store the moves importance when generating the list of moves
