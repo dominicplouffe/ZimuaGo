@@ -55,7 +55,11 @@ type ZimuaGame struct {
 
 func main() {
 
-	defer profile.Start().Stop()
+	args := os.Args[1:]
+
+	if len(args) > 1 && args[1] == "-profile" {
+		defer profile.Start().Stop()
+	}
 	rand.Seed(time.Now().UnixNano())
 
 	f, err := os.OpenFile("zimua.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
@@ -65,9 +69,16 @@ func main() {
 	defer f.Close()
 	log.SetOutput(f)
 
-	xBoard()
-	// computerVSHuman()
-	// computerVSComputer()
+	if len(args) >= 1 && args[0] == "-uci" {
+		xBoard()
+	} else if len(args) >= 1 && args[0] == "-cpu" {
+		computerVSComputer()
+	} else if len(args) >= 1 && args[0] == "-human" {
+		computerVSHuman()
+	} else {
+		fmt.Println("Usage: ./engine.go [-uci|-cpu|-human] [-profile]")
+	}
+
 }
 
 var wrt = bufio.NewWriter(os.Stdout)
@@ -547,22 +558,17 @@ func (zg *ZimuaGame) qsearch(pos *chess.Position, standPat int) int {
 func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minLow int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
 
 	if depth == 0 {
+		score := 0
 		if pos.Status() == chess.Checkmate {
 			if pos.Turn() == chess.White {
-				return MoveScore{
-					score: zg.minValue,
-				}
+				score = -99999998
+			} else {
+				score = 99999998
 			}
-			return MoveScore{
-				score: zg.maxValue,
-			}
+		} else {
+			score = zg.pieceScoring(pos.Board())
 		}
-
-		data, _ := pos.Board().MarshalBinary()
-		_ = data
-		mv := MoveScore{
-			score: zg.pieceScoring(pos.Board()),
-		}
+		mv := zg.createMoveScore(zg.nilMove, score, false)
 		return mv
 	}
 
@@ -582,6 +588,7 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 	moveCount := 0
 	bestMove := legalMoves[0]
 	value := -99999999
+
 	if !maxPlayer {
 		value = 99999999
 	}
@@ -592,20 +599,19 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 
 		newDepth := depth - 1
 		newPos := pos.Update(&mv.move)
-
 		if maxPlayer {
 			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, false, startDepth, mv.inCheck, false)
 
 			newValue := Max(value, res.score)
 
 			if newValue > value {
-				if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-					value = newValue
-					bestMove.move = mv.move
-					bestMove.score = newValue
-				}
+				// if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
+				value = newValue
+				bestMove.move = mv.move
+				bestMove.score = newValue
 			}
 			maxHigh = Max(maxHigh, value)
+
 			if maxHigh >= minLow {
 				break
 			}
@@ -616,12 +622,9 @@ func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minL
 			newValue := Min(value, res.score)
 
 			if newValue < value {
-				if newPos.Status() != chess.Stalemate && newPos.Status() != chess.ThreefoldRepetition {
-					value = newValue
-					bestMove.move = mv.move
-					bestMove.score = newValue
-
-				}
+				value = newValue
+				bestMove.move = mv.move
+				bestMove.score = newValue
 			}
 			minLow = Min(minLow, value)
 			if maxHigh >= minLow {
@@ -652,7 +655,7 @@ func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 	alpha := minEval
 	beta := maxEval
 
-	ply := 2
+	ply := 0
 	maxPly := 99
 
 	totalStart := time.Now()
@@ -670,12 +673,6 @@ func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		ply++
 
 		res := zg.calcMove(g, ply, alpha, beta, inCheck)
-
-		if res.score == zg.maxValue || res.score == zg.minValue {
-			bestMove = res.move
-			moveInCheck = true
-			break
-		}
 
 		if res.score > alpha && res.score < beta {
 			alpha = res.score - 500
