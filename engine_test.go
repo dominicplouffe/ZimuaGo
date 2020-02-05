@@ -14,11 +14,6 @@ func TestPieceScoring(t *testing.T) {
 		posPointsWhite: make(map[int][]int),
 		piecePoints:    make(map[int]int),
 		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
 		timeControl:    getTimeControl(5),
 		name:           "Zimua White",
 	}
@@ -42,11 +37,6 @@ func TestMinMax(t *testing.T) {
 		posPointsWhite: make(map[int][]int),
 		piecePoints:    make(map[int]int),
 		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
 		timeControl:    getTimeControl(5),
 		name:           "Zimua White",
 	}
@@ -118,4 +108,57 @@ func TestNullMove(t *testing.T) {
 		t.Error("Null Move did not work")
 	}
 
+}
+
+func TestMoveScoring(t *testing.T) {
+	zg := ZimuaGame{
+		posPointsBlack: make(map[int][]int),
+		posPointsWhite: make(map[int][]int),
+		piecePoints:    make(map[int]int),
+		squareIndex:    make(map[string]int),
+		moveSearched:   0,
+		cacheHit:       0,
+		nilMove:        chess.Move{},
+		minValue:       -9999999999,
+		maxValue:       9999999999,
+		timeControl:    getTimeControl(5),
+		name:           "Zimua White",
+	}
+	zg.initGame()
+
+	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3pN3/3P4/8/PPP1PPPP/RNBQKB1R w KQkq - 0 1")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	legalMoves := zg.getMoves(game.Position(), 1)
+
+	prev := legalMoves[0].score
+	for i, m := range legalMoves {
+		if i == 0 {
+			continue
+		}
+		if m.score > prev {
+			t.Error("Invalid legal moves")
+		}
+		prev = m.score
+	}
+}
+
+func TestOpenningMoves(t *testing.T) {
+	zg := ZimuaGame{
+		posPointsBlack: make(map[int][]int),
+		posPointsWhite: make(map[int][]int),
+		piecePoints:    make(map[int]int),
+		squareIndex:    make(map[string]int),
+		moveSearched:   0,
+		cacheHit:       0,
+		nilMove:        chess.Move{},
+		minValue:       -9999999999,
+		maxValue:       9999999999,
+		timeControl:    getTimeControl(5),
+		name:           "Zimua White",
+	}
+	zg.initGame()
+
+	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+	zg.openingMove(game)
 }
