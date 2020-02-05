@@ -58,22 +58,7 @@ func computerVSHuman() {
 	// game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-		doOpen:         true,
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -113,37 +98,8 @@ func computerVSHuman() {
 }
 
 func computerVSComputer() {
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-		doOpen:         true,
-	}
-	zg.initGame()
-
-	zg2 := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua Black",
-		doOpen:         true,
-	}
-	zg2.initGame()
+	zg := Zimua("White", 5.0)
+	zg2 := Zimua("Black", 5.0)
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 
@@ -168,23 +124,7 @@ func xBoard() {
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(1),
-		name:           "Zimua Engine v1.0",
-		moveCount:      0,
-		doOpen:         true,
-	}
-	zg.initGame()
-
+	zg := Zimua("Zimua Chess Engine", 5.0)
 	reader := bufio.NewReader(os.Stdin)
 
 	for {

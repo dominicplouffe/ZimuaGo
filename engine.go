@@ -50,6 +50,28 @@ type ZimuaGame struct {
 	doOpen         bool
 }
 
+//Zimua creates an instance of the Zimua chess engine
+func Zimua(name string, maxMinutes float64) ZimuaGame {
+	zg := ZimuaGame{
+		posPointsBlack: make(map[int][]int),
+		posPointsWhite: make(map[int][]int),
+		piecePoints:    make(map[int]int),
+		squareIndex:    make(map[string]int),
+		moveSearched:   0,
+		cacheHit:       0,
+		nilMove:        chess.Move{},
+		minValue:       -9999999999,
+		maxValue:       9999999999,
+		timeControl:    getTimeControl(maxMinutes),
+		name:           name,
+		moveCount:      0,
+		doOpen:         true,
+	}
+	zg.initGame()
+
+	return zg
+}
+
 func (zg ZimuaGame) initGame() {
 	zg.posPointsBlack[0] = append(zg.posPointsBlack[0], 900, 900, 900, 900, 900, 900, 900, 900, 78, 83, 86, 73, 102, 82, 85, 90, 20, 29, 21, 44, 40, 31, 44, 20, 20, 16, -2, 15, 14, 0, 15, 20, 10, 3, 10, 20, 20, 1, 0, 10, 10, 9, 5, 10, 10, -2, 3, 10, -10, 8, -7, -37, -36, -14, 3, -10, 0, 0, 0, 0, 0, 0, 0, 0)
 	zg.posPointsBlack[1] = append(zg.posPointsBlack[1], -66, -53, -75, -75, -10, -55, -58, -70, -3, -6, 100, -36, 4, 62, -4, -14, 10, 67, 100, 74, 73, 100, 62, -2, 24, 24, 45, 37, 33, 41, 25, 17, -1, 5, 31, 21, 22, 35, 2, 0, -18, 10, 25, 22, 18, 25, 11, -14, -23, -15, 2, 0, 2, 0, -23, -20, -74, -23, -26, -24, -19, -35, -22, -69)

@@ -9,15 +9,7 @@ import (
 // Test Example
 func TestPieceScoring(t *testing.T) {
 
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -32,15 +24,7 @@ func TestPieceScoring(t *testing.T) {
 
 // Testing the MinMax Scoring to 1, 2 and 3 depth
 func TestMinMax(t *testing.T) {
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 3")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -64,20 +48,7 @@ func TestMinMax(t *testing.T) {
 
 // Testing the NegaMax Scoring to 1, 2 and 3 depth
 func TestNegaMax(t *testing.T) {
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 3")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -111,20 +82,7 @@ func TestNullMove(t *testing.T) {
 }
 
 func TestMoveScoring(t *testing.T) {
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3pN3/3P4/8/PPP1PPPP/RNBQKB1R w KQkq - 0 1")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -144,20 +102,7 @@ func TestMoveScoring(t *testing.T) {
 }
 
 func TestOpenningMoves(t *testing.T) {
-	zg := ZimuaGame{
-		posPointsBlack: make(map[int][]int),
-		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
-		moveSearched:   0,
-		cacheHit:       0,
-		nilMove:        chess.Move{},
-		minValue:       -9999999999,
-		maxValue:       9999999999,
-		timeControl:    getTimeControl(5),
-		name:           "Zimua White",
-	}
-	zg.initGame()
+	zg := Zimua("White", 5.0)
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	zg.openingMove(game)
