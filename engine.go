@@ -36,10 +36,8 @@ type ZimuaGame struct {
 	posPointsBlack map[int][]int
 	posPointsWhite map[int][]int
 	piecePoints    map[int]int
-	squareIndex    map[string]int
 	moveCount      int
 	moveSearched   int
-	cacheHit       int
 	nilMove        chess.Move
 	timeControl    TimeControl
 	inCheck        bool
@@ -56,9 +54,7 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 		posPointsBlack: make(map[int][]int),
 		posPointsWhite: make(map[int][]int),
 		piecePoints:    make(map[int]int),
-		squareIndex:    make(map[string]int),
 		moveSearched:   0,
-		cacheHit:       0,
 		nilMove:        chess.Move{},
 		minValue:       -9999999999,
 		maxValue:       9999999999,
@@ -72,43 +68,7 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 	return zg
 }
 
-func (zg ZimuaGame) initGame() {
-	zg.posPointsBlack[0] = append(zg.posPointsBlack[0], 900, 900, 900, 900, 900, 900, 900, 900, 78, 83, 86, 73, 102, 82, 85, 90, 20, 29, 21, 44, 40, 31, 44, 20, 20, 16, -2, 15, 14, 0, 15, 20, 10, 3, 10, 20, 20, 1, 0, 10, 10, 9, 5, 10, 10, -2, 3, 10, -10, 8, -7, -37, -36, -14, 3, -10, 0, 0, 0, 0, 0, 0, 0, 0)
-	zg.posPointsBlack[1] = append(zg.posPointsBlack[1], -66, -53, -75, -75, -10, -55, -58, -70, -3, -6, 100, -36, 4, 62, -4, -14, 10, 67, 100, 74, 73, 100, 62, -2, 24, 24, 45, 37, 33, 41, 25, 17, -1, 5, 31, 21, 22, 35, 2, 0, -18, 10, 25, 22, 18, 25, 11, -14, -23, -15, 2, 0, 2, 0, -23, -20, -74, -23, -26, -24, -19, -35, -22, -69)
-	zg.posPointsBlack[2] = append(zg.posPointsBlack[2], -59, -78, -82, -76, -23, -107, -37, -50, -11, 20, 35, -42, -39, 31, 2, -22, -9, 39, -32, 41, 52, -10, 28, -14, 25, 17, 20, 34, 26, 25, 15, 10, 13, 10, 17, 23, 17, 16, 0, 7, 14, 25, 24, 15, 8, 25, 20, 15, 19, 20, 11, 6, 7, 6, 20, 16, -7, 2, -15, -12, -14, -15, -10, -10)
-	zg.posPointsBlack[3] = append(zg.posPointsBlack[3], 35, 29, 33, 4, 37, 33, 56, 50, 55, 29, 56, 67, 55, 62, 34, 60, 19, 35, 28, 33, 45, 27, 25, 15, 0, 5, 16, 13, 18, -4, -9, -6, -28, -35, -16, -21, -13, -29, -46, -30, -42, -28, -42, -25, -25, -35, -26, -46, -53, -38, -31, -26, -29, -43, -44, -53, -30, -24, -18, 5, -2, -18, -31, -32)
-	zg.posPointsBlack[4] = append(zg.posPointsBlack[4], 6, 1, -8, -104, 69, 24, 88, 26, 14, 32, 60, -10, 20, 76, 57, 24, -2, 43, 32, 60, 72, 63, 43, 2, 1, -16, 22, 17, 25, 20, -13, -6, -14, -15, -2, -5, -1, -10, -20, -22, -30, -6, -13, -11, -16, -11, -16, -27, -36, -18, 0, -19, -15, -15, -21, -38, -39, -30, -31, -13, -31, -36, -34, -42)
-	zg.posPointsBlack[5] = append(zg.posPointsBlack[5], 4, 54, 47, -99, -99, 60, 83, -62, -32, 10, 55, 56, 56, 55, 10, 3, -62, 12, -57, 44, -67, 28, 37, -31, -55, 50, 11, -4, -19, 13, 0, -49, -55, -43, -52, -28, -51, -47, -8, -50, -47, -42, -43, -79, -64, -32, -29, -32, -4, 3, -14, -50, -57, -18, 13, 4, 17, 30, -3, -14, 6, -1, 40, 18)
-
-	zg.posPointsWhite[0] = append(zg.posPointsWhite[0], 0, 0, 0, 0, 0, 0, 0, 0, -10, 8, -7, -37, -36, -14, 3, -10, 10, 9, 5, 10, 10, -2, 3, 10, 10, 3, 10, 20, 20, 1, 0, 10, 20, 16, -2, 15, 14, 0, 15, 20, 20, 29, 21, 44, 40, 31, 44, 20, 78, 83, 86, 73, 102, 82, 85, 90, 900, 900, 900, 900, 900, 900, 900, 900)
-	zg.posPointsWhite[1] = append(zg.posPointsWhite[1], -74, -23, -26, -24, -19, -35, -22, -69, -23, -15, 2, 0, 2, 0, -23, -20, -18, 10, 25, 22, 18, 25, 11, -14, -1, 5, 31, 21, 22, 35, 2, 0, 24, 24, 45, 37, 33, 41, 25, 17, 10, 67, 100, 74, 73, 100, 62, -2, -3, -6, 100, -36, 4, 62, -4, -14, -66, -53, -75, -75, -10, -55, -58, -70)
-	zg.posPointsWhite[2] = append(zg.posPointsWhite[2], -7, 2, -15, -12, -14, -15, -10, -10, 19, 20, 11, 6, 7, 6, 20, 16, 14, 25, 24, 15, 8, 25, 20, 15, 13, 10, 17, 23, 17, 16, 0, 7, 25, 17, 20, 34, 26, 25, 15, 10, -9, 39, -32, 41, 52, -10, 28, -14, -11, 20, 35, -42, -39, 31, 2, -22, -59, -78, -82, -76, -23, -107, -37, -50)
-	zg.posPointsWhite[3] = append(zg.posPointsWhite[3], -30, -24, -18, 5, -2, -18, -31, -32, -53, -38, -31, -26, -29, -43, -44, -53, -42, -28, -42, -25, -25, -35, -26, -46, -28, -35, -16, -21, -13, -29, -46, -30, 0, 5, 16, 13, 18, -4, -9, -6, 19, 35, 28, 33, 45, 27, 25, 15, 55, 29, 56, 67, 55, 62, 34, 60, 35, 29, 33, 4, 37, 33, 56, 50)
-	zg.posPointsWhite[4] = append(zg.posPointsWhite[4], -39, -30, -31, -13, -31, -36, -34, -42, -36, -18, 0, -19, -15, -15, -21, -38, -30, -6, -13, -11, -16, -11, -16, -27, -14, -15, -2, -5, -1, -10, -20, -22, 1, -16, 22, 17, 25, 20, -13, -6, -2, 43, 32, 60, 72, 63, 43, 2, 14, 32, 60, -10, 20, 76, 57, 24, 6, 1, -8, -104, 69, 24, 88, 26)
-	zg.posPointsWhite[5] = append(zg.posPointsWhite[5], 17, 30, -3, -14, 6, -1, 40, 18, -4, 3, -14, -50, -57, -18, 13, 4, -47, -42, -43, -79, -64, -32, -29, -32, -55, -43, -52, -28, -51, -47, -8, -50, -55, 50, 11, -4, -19, 13, 0, -49, -62, 12, -57, 44, -67, 28, 37, -31, -32, 10, 55, 56, 56, 55, 10, 3, 4, 54, 47, -99, -99, 60, 83, -62)
-
-	zg.piecePoints[0] = 100
-	zg.piecePoints[1] = 280
-	zg.piecePoints[2] = 320
-	zg.piecePoints[3] = 479
-	zg.piecePoints[4] = 929
-	zg.piecePoints[5] = 60000
-
-	for i := 0; i < 64; i++ {
-		zg.squareIndex[chess.Square(i).String()] = i
-	}
-}
-
-// Min function
-func Min(x, y int) int {
-	if x < y {
-		return x
-	}
-	return y
-}
-
-// Max function
-func Max(x, y int) int {
+func max(x, y int) int {
 	if x > y {
 		return x
 	}
@@ -133,6 +93,29 @@ func getTimeControl(totalTime float64) TimeControl {
 
 	log.Println(tc)
 	return tc
+}
+
+func (zg ZimuaGame) initGame() {
+	zg.posPointsBlack[0] = append(zg.posPointsBlack[0], 900, 900, 900, 900, 900, 900, 900, 900, 78, 83, 86, 73, 102, 82, 85, 90, 20, 29, 21, 44, 40, 31, 44, 20, 20, 16, -2, 15, 14, 0, 15, 20, 10, 3, 10, 20, 20, 1, 0, 10, 10, 9, 5, 10, 10, -2, 3, 10, -10, 8, -7, -37, -36, -14, 3, -10, 0, 0, 0, 0, 0, 0, 0, 0)
+	zg.posPointsBlack[1] = append(zg.posPointsBlack[1], -66, -53, -75, -75, -10, -55, -58, -70, -3, -6, 100, -36, 4, 62, -4, -14, 10, 67, 100, 74, 73, 100, 62, -2, 24, 24, 45, 37, 33, 41, 25, 17, -1, 5, 31, 21, 22, 35, 2, 0, -18, 10, 25, 22, 18, 25, 11, -14, -23, -15, 2, 0, 2, 0, -23, -20, -74, -23, -26, -24, -19, -35, -22, -69)
+	zg.posPointsBlack[2] = append(zg.posPointsBlack[2], -59, -78, -82, -76, -23, -107, -37, -50, -11, 20, 35, -42, -39, 31, 2, -22, -9, 39, -32, 41, 52, -10, 28, -14, 25, 17, 20, 34, 26, 25, 15, 10, 13, 10, 17, 23, 17, 16, 0, 7, 14, 25, 24, 15, 8, 25, 20, 15, 19, 20, 11, 6, 7, 6, 20, 16, -7, 2, -15, -12, -14, -15, -10, -10)
+	zg.posPointsBlack[3] = append(zg.posPointsBlack[3], 35, 29, 33, 4, 37, 33, 56, 50, 55, 29, 56, 67, 55, 62, 34, 60, 19, 35, 28, 33, 45, 27, 25, 15, 0, 5, 16, 13, 18, -4, -9, -6, -28, -35, -16, -21, -13, -29, -46, -30, -42, -28, -42, -25, -25, -35, -26, -46, -53, -38, -31, -26, -29, -43, -44, -53, -30, -24, -18, 5, -2, -18, -31, -32)
+	zg.posPointsBlack[4] = append(zg.posPointsBlack[4], 6, 1, -8, -104, 69, 24, 88, 26, 14, 32, 60, -10, 20, 76, 57, 24, -2, 43, 32, 60, 72, 63, 43, 2, 1, -16, 22, 17, 25, 20, -13, -6, -14, -15, -2, -5, -1, -10, -20, -22, -30, -6, -13, -11, -16, -11, -16, -27, -36, -18, 0, -19, -15, -15, -21, -38, -39, -30, -31, -13, -31, -36, -34, -42)
+	zg.posPointsBlack[5] = append(zg.posPointsBlack[5], 4, 54, 47, -99, -99, 60, 83, -62, -32, 10, 55, 56, 56, 55, 10, 3, -62, 12, -57, 44, -67, 28, 37, -31, -55, 50, 11, -4, -19, 13, 0, -49, -55, -43, -52, -28, -51, -47, -8, -50, -47, -42, -43, -79, -64, -32, -29, -32, -4, 3, -14, -50, -57, -18, 13, 4, 17, 30, -3, -14, 6, -1, 40, 18)
+
+	zg.posPointsWhite[0] = append(zg.posPointsWhite[0], 0, 0, 0, 0, 0, 0, 0, 0, -10, 8, -7, -37, -36, -14, 3, -10, 10, 9, 5, 10, 10, -2, 3, 10, 10, 3, 10, 20, 20, 1, 0, 10, 20, 16, -2, 15, 14, 0, 15, 20, 20, 29, 21, 44, 40, 31, 44, 20, 78, 83, 86, 73, 102, 82, 85, 90, 900, 900, 900, 900, 900, 900, 900, 900)
+	zg.posPointsWhite[1] = append(zg.posPointsWhite[1], -74, -23, -26, -24, -19, -35, -22, -69, -23, -15, 2, 0, 2, 0, -23, -20, -18, 10, 25, 22, 18, 25, 11, -14, -1, 5, 31, 21, 22, 35, 2, 0, 24, 24, 45, 37, 33, 41, 25, 17, 10, 67, 100, 74, 73, 100, 62, -2, -3, -6, 100, -36, 4, 62, -4, -14, -66, -53, -75, -75, -10, -55, -58, -70)
+	zg.posPointsWhite[2] = append(zg.posPointsWhite[2], -7, 2, -15, -12, -14, -15, -10, -10, 19, 20, 11, 6, 7, 6, 20, 16, 14, 25, 24, 15, 8, 25, 20, 15, 13, 10, 17, 23, 17, 16, 0, 7, 25, 17, 20, 34, 26, 25, 15, 10, -9, 39, -32, 41, 52, -10, 28, -14, -11, 20, 35, -42, -39, 31, 2, -22, -59, -78, -82, -76, -23, -107, -37, -50)
+	zg.posPointsWhite[3] = append(zg.posPointsWhite[3], -30, -24, -18, 5, -2, -18, -31, -32, -53, -38, -31, -26, -29, -43, -44, -53, -42, -28, -42, -25, -25, -35, -26, -46, -28, -35, -16, -21, -13, -29, -46, -30, 0, 5, 16, 13, 18, -4, -9, -6, 19, 35, 28, 33, 45, 27, 25, 15, 55, 29, 56, 67, 55, 62, 34, 60, 35, 29, 33, 4, 37, 33, 56, 50)
+	zg.posPointsWhite[4] = append(zg.posPointsWhite[4], -39, -30, -31, -13, -31, -36, -34, -42, -36, -18, 0, -19, -15, -15, -21, -38, -30, -6, -13, -11, -16, -11, -16, -27, -14, -15, -2, -5, -1, -10, -20, -22, 1, -16, 22, 17, 25, 20, -13, -6, -2, 43, 32, 60, 72, 63, 43, 2, 14, 32, 60, -10, 20, 76, 57, 24, 6, 1, -8, -104, 69, 24, 88, 26)
+	zg.posPointsWhite[5] = append(zg.posPointsWhite[5], 17, 30, -3, -14, 6, -1, 40, 18, -4, 3, -14, -50, -57, -18, 13, 4, -47, -42, -43, -79, -64, -32, -29, -32, -55, -43, -52, -28, -51, -47, -8, -50, -55, 50, 11, -4, -19, 13, 0, -49, -62, 12, -57, 44, -67, 28, 37, -31, -32, 10, 55, 56, 56, 55, 10, 3, 4, 54, 47, -99, -99, 60, 83, -62)
+
+	zg.piecePoints[0] = 100
+	zg.piecePoints[1] = 280
+	zg.piecePoints[2] = 320
+	zg.piecePoints[3] = 479
+	zg.piecePoints[4] = 929
+	zg.piecePoints[5] = 60000
 }
 
 func (zg *ZimuaGame) createMoveScore(move chess.Move, score int, killer bool) MoveScore {
@@ -283,96 +266,6 @@ func (zg *ZimuaGame) qsearch(pos *chess.Position, standPat int) int {
 	return standPat
 }
 
-func (zg *ZimuaGame) alphaBeta(pos *chess.Position, depth int, maxHigh int, minLow int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
-
-	if depth == 0 {
-		if pos.Status() == chess.Checkmate {
-			if pos.Turn() == chess.White {
-				return MoveScore{
-					score: zg.minValue,
-				}
-			}
-			return MoveScore{
-				score: zg.maxValue,
-			}
-		}
-
-		data, _ := pos.Board().MarshalBinary()
-		_ = data
-		mv := MoveScore{
-			score: zg.pieceScoring(pos.Board()),
-		}
-		return mv
-	}
-
-	legalMoves := zg.getMoves(pos, depth)
-
-	if len(legalMoves) == 0 {
-		if pos.Turn() == chess.White {
-			return MoveScore{
-				score: zg.minValue,
-			}
-		}
-		return MoveScore{
-			score: zg.maxValue,
-		}
-	}
-
-	moveCount := 0
-	bestMove := legalMoves[0]
-	value := -99999999
-	if !maxPlayer {
-		value = 99999999
-	}
-
-	for _, mv := range legalMoves {
-		moveCount++
-		zg.moveSearched++
-
-		newDepth := depth - 1
-		newPos := pos.Update(&mv.move)
-
-		if maxPlayer {
-			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, false, startDepth, mv.inCheck, false)
-			newValue := Max(value, res.score)
-
-			if newValue > value {
-				status := newPos.Status()
-				if status != chess.Stalemate && status != chess.ThreefoldRepetition {
-					value = newValue
-					bestMove.move = mv.move
-					bestMove.score = newValue
-				}
-			}
-			maxHigh = Max(maxHigh, value)
-
-			if maxHigh >= minLow {
-				break
-			}
-
-		} else {
-			res := zg.alphaBeta(newPos, newDepth, maxHigh, minLow, true, startDepth, mv.inCheck, false)
-
-			newValue := Min(value, res.score)
-
-			if newValue < value {
-				status := newPos.Status()
-				if status != chess.Stalemate && status != chess.ThreefoldRepetition {
-					value = newValue
-					bestMove.move = mv.move
-					bestMove.score = newValue
-				}
-			}
-			minLow = Min(minLow, value)
-			if maxHigh >= minLow {
-				break
-			}
-		}
-	}
-
-	return bestMove
-}
-
 func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta int, maxPlayer bool, startDepth int, inCheck bool, isNull bool) MoveScore {
 
 	if depth == 0 {
@@ -448,7 +341,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			score = -res.score
 		}
 
-		newValue := Max(value, score)
+		newValue := max(value, score)
 
 		if newValue > value {
 			status := newPos.Status()
@@ -458,7 +351,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 				bestMove.score = newValue
 			}
 		}
-		alpha = Max(alpha, value)
+		alpha = max(alpha, value)
 
 		if alpha >= beta {
 			break
@@ -470,8 +363,6 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 }
 
 func (zg *ZimuaGame) calcMove(g *chess.Game, depth int, alpha int, beta int, inCheck bool) MoveScore {
-	zg.moveSearched = 0
-	zg.cacheHit = 0
 	maxPlayer := true
 	if g.Position().Turn() == chess.Black {
 		maxPlayer = false

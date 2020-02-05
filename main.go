@@ -139,20 +139,7 @@ func xBoard() {
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-			zg = ZimuaGame{
-				posPointsBlack: make(map[int][]int),
-				posPointsWhite: make(map[int][]int),
-				piecePoints:    make(map[int]int),
-				squareIndex:    make(map[string]int),
-				moveSearched:   0,
-				cacheHit:       0,
-				nilMove:        chess.Move{},
-				minValue:       -9999999999,
-				maxValue:       9999999999,
-				timeControl:    getTimeControl(5),
-				name:           "Zimua White",
-			}
-			zg.initGame()
+			zg = Zimua("Zimua Chess Engine", 5.0)
 			response("Zimua Ready\n")
 		} else if cmd == "protover 2" {
 			response(fmt.Sprintf("feature myname=\"%v\"\n", zg.name))

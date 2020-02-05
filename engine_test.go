@@ -22,30 +22,6 @@ func TestPieceScoring(t *testing.T) {
 
 }
 
-// Testing the MinMax Scoring to 1, 2 and 3 depth
-func TestMinMax(t *testing.T) {
-	zg := Zimua("White", 5.0)
-
-	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 3")
-	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
-
-	res := zg.alphaBeta(game.Position(), 1, -9999999999, 9999999999, true, 1, false, false)
-	if res.move.String() != "e2e4" || res.score != 55 {
-		t.Error("Depth 1 is incorrect")
-	}
-
-	res = zg.alphaBeta(game.Position(), 2, -9999999999, 9999999999, true, 2, false, false)
-	if res.move.String() != "e2e4" || res.score != -77 {
-		t.Error("Depth 2 is incorrect")
-	}
-
-	res = zg.alphaBeta(game.Position(), 3, -9999999999, 9999999999, true, 3, false, false)
-	if res.move.String() != "b1c3" || res.score != 123 {
-		t.Error("Depth 3 is incorrect")
-	}
-
-}
-
 // Testing the NegaMax Scoring to 1, 2 and 3 depth
 func TestNegaMax(t *testing.T) {
 	zg := Zimua("White", 5.0)
