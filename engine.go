@@ -3,12 +3,15 @@ package main
 import (
 	"fmt"
 	"log"
+	"math"
 	"math/rand"
 	"sort"
 	"time"
 
 	"github.com/dominicplouffe/chess"
 )
+
+var checkmate = 99999998
 
 // MoveScore is used to store the moves importance when generating the list of moves
 type MoveScore struct {
@@ -203,6 +206,7 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	pieceScoreBlack := 0
 	piecePosBlack := 0
 
+	cnt := 0
 	for i := 0; i < 64; i++ {
 		piece := b.Piece(chess.Square(i))
 
@@ -231,6 +235,10 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 		} else {
 			pieceScoreBlack += zg.piecePoints[pieceIdx]
 			piecePosBlack += zg.posPointsBlack[pieceIdx][i]
+		}
+		cnt++
+		if cnt == 32 {
+			break
 		}
 	}
 
@@ -271,7 +279,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	if depth == 0 {
 		score := 0
 		if pos.Status() == chess.Checkmate {
-			score = 99999998
+			score = checkmate
 		} else {
 			score = zg.pieceScoring(pos.Board())
 		}
@@ -374,16 +382,16 @@ func (zg *ZimuaGame) calcMove(g *chess.Game, depth int, alpha int, beta int, inC
 
 func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
-	if zg.doOpen {
+	// if zg.doOpen {
 
-		openMove := zg.openingMove(g)
+	// 	openMove := zg.openingMove(g)
 
-		if openMove != nil {
-			g.Move(openMove)
-			return false, *openMove
-		}
-		zg.doOpen = false
-	}
+	// 	if openMove != nil {
+	// 		g.Move(openMove)
+	// 		return false, *openMove
+	// 	}
+	// 	zg.doOpen = false
+	// }
 
 	minEval := zg.minValue
 	maxEval := zg.maxValue
@@ -408,6 +416,12 @@ func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		ply++
 
 		res := zg.calcMove(g, ply, alpha, beta, inCheck)
+
+		if math.Abs(float64(res.score)) == float64(checkmate) {
+			bestMove = res.move
+			inCheck = true
+			break
+		}
 
 		if res.score > alpha && res.score < beta {
 			alpha = res.score - 500
