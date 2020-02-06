@@ -6,6 +6,15 @@ import (
 	"github.com/dominicplouffe/chess"
 )
 
+func stringInSlice(a string, list []string) bool {
+	for _, b := range list {
+		if b == a {
+			return true
+		}
+	}
+	return false
+}
+
 // Test Example
 func TestPieceScoring(t *testing.T) {
 
@@ -22,6 +31,27 @@ func TestPieceScoring(t *testing.T) {
 
 }
 
+func TestSiblings(t *testing.T) {
+	zg := Zimua("White", 5.0)
+
+	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+	siblings := make([]MoveScore, 5)
+	res := zg.alphaBetaNM(game.Position(), 5, -9999999999, 9999999999, 1, false, false, siblings)
+
+	prevs := make([]string, 5)
+	if res.move.String() == "a1a1" {
+		t.Error("Something terrible happened")
+	}
+
+	for i, s := range siblings {
+		mv := s.move.String()
+		if stringInSlice(mv, prevs) {
+			t.Error(mv + " already in siblings")
+		}
+		prevs[i] = mv
+	}
+}
+
 // Testing the NegaMax Scoring to 1, 2 and 3 depth
 func TestNegaMax(t *testing.T) {
 	zg := Zimua("White", 5.0)
@@ -29,17 +59,20 @@ func TestNegaMax(t *testing.T) {
 	fen, _ := chess.FEN("r1bqkbnr/ppp1pppp/2n5/3p4/3P4/5N2/PPP1PPPP/RNBQKB1R w KQkq - 0 3")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
-	res := zg.alphaBetaNM(game.Position(), 1, -9999999999, 9999999999, true, 1, false, false)
+	siblings := make([]MoveScore, 1)
+	res := zg.alphaBetaNM(game.Position(), 1, -9999999999, 9999999999, 1, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != 55 {
-		t.Error("Depth 1 NM is incorrect")
+		t.Error("Depth 1 NM is incorrect: ", res.move)
 	}
 
-	res = zg.alphaBetaNM(game.Position(), 2, -9999999999, 9999999999, true, 2, false, false)
+	siblings = make([]MoveScore, 2)
+	res = zg.alphaBetaNM(game.Position(), 2, -9999999999, 9999999999, 2, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != -77 {
 		t.Error("Depth 2 is incorrect")
 	}
 
-	res = zg.alphaBetaNM(game.Position(), 3, -9999999999, 9999999999, true, 3, false, false)
+	siblings = make([]MoveScore, 3)
+	res = zg.alphaBetaNM(game.Position(), 3, -9999999999, 9999999999, 3, false, false, siblings)
 	if res.move.String() != "b1c3" || res.score != 123 {
 		t.Error("Depth 3 is incorrect")
 	}
