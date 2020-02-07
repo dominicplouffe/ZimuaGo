@@ -18,7 +18,7 @@ func TestPieceScoring(t *testing.T) {
 	score := zg.pieceScoring(game.Position().Board())
 
 	if score != -228 {
-		t.Error("Piece scoring should be -228")
+		t.Error("Piece scoring should be -228", score)
 	}
 
 }
@@ -85,7 +85,17 @@ func TestOpenningMoves(t *testing.T) {
 	zg := Zimua("White", 5.0)
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-	zg.openingMove(game)
+	game.MoveStr("d2d4")
+	game.MoveStr("e7e6")
+	game.MoveStr("c2c4")
+
+	fmt.Println(game.Position().String())
+
+	moveBlack := zg.openingMove(game)
+
+	if moveBlack.String() != "b7b6" {
+		t.Error("Move should be b7b6")
+	}
 }
 
 //TestCheckmat1 should produce a checkmate
@@ -126,7 +136,7 @@ func TestCheckmate2(t *testing.T) {
 	// fmt.Println("Outcome: ", game.Outcome())
 }
 
-func TestCheckmast3(t *testing.T) {
+func TestCheckmate3(t *testing.T) {
 	zg := Zimua("White", 5.0)
 	f := "7k/8/8/8/3q4/6K1/3r4/8 b - - 0 1"
 
@@ -143,4 +153,33 @@ func TestCheckmast3(t *testing.T) {
 
 	fmt.Println(res.move.String(), res.score, moves)
 
+}
+
+func TestBitBoards(t *testing.T) {
+	fmt.Println("TestBitBoards")
+
+	// zg := Zimua("White", 5.0)
+	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	var bitboards []uint64 = game.Position().Board().Bitboards()
+	var pos uint64 = 1
+	counts := []int{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
+	goodValues := []int{1, 1, 2, 2, 2, 8, 1, 1, 2, 2, 2, 8}
+
+	for j := 0; j < 12; j++ {
+		bb := bitboards[j]
+		pos = 1
+		for i := 0; i < 64; i++ {
+			if bb&pos > 0 {
+				counts[j]++
+			}
+			pos = pos << 1
+		}
+	}
+
+	for x := 0; x < 12; x++ {
+		if counts[x] != goodValues[x] {
+			t.Error("Bitboards do not match")
+		}
+	}
 }
