@@ -351,12 +351,16 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, false, startDepth, mv.inCheck, false, newSiblings)
 			score = -res.score
 		}
+		status := newPos.Status()
+		if status == chess.Checkmate {
+			score = checkmate
+		}
 
 		newValue := max(value, score)
-
 		if newValue > value {
-			status := newPos.Status()
+
 			if status != chess.Stalemate && status != chess.ThreefoldRepetition {
+
 				value = newValue
 				bestMove.move = mv.move
 				bestMove.score = newValue
@@ -454,7 +458,12 @@ func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		t := time.Now()
 		elapsed := t.Sub(start)
 
-		response(fmt.Sprintf("%3v %6v %8v %10v %v\n", ply, res.score, int(elapsed)/1000000000, zg.moveSearched, res.move.String()))
+		moves := ""
+		for i := len(siblings) - 1; i >= 0; i-- {
+			moves += siblings[i].move.String() + " "
+		}
+
+		response(fmt.Sprintf("%3v %6v %8v %10v %v\n", ply, res.score, int(elapsed)/1000000000, zg.moveSearched, moves))
 
 		totalElapsed = t.Sub(totalStart).Seconds()
 		zg.timeControl.totalNodes += zg.moveSearched

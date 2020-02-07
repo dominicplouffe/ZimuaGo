@@ -126,19 +126,21 @@ func TestCheckmate2(t *testing.T) {
 	// fmt.Println("Outcome: ", game.Outcome())
 }
 
-func TestTmp(t *testing.T) {
+func TestCheckmast3(t *testing.T) {
 	zg := Zimua("White", 5.0)
-	f := "b3r1k1/p5p1/pb2p3/3p1r1p/1Pp5/4P3/P1PBNPPP/1R4KR b - - 3 26"
+	f := "7k/8/8/8/3q4/6K1/3r4/8 b - - 0 1"
 
 	fen, _ := chess.FEN(f)
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	siblings := make([]MoveScore, 9)
 	res := zg.alphaBetaNM(game.Position(), 9, -9999999999, 9999999999, true, 3, false, false, siblings)
-	_ = res
 
-	for _, i := range siblings {
-		fmt.Println(i.move.String())
+	moves := ""
+	for i := len(siblings) - 1; i >= 0; i-- {
+		moves += siblings[i].move.String() + " "
 	}
+
+	fmt.Println(res.move.String(), res.score, moves)
 
 }
