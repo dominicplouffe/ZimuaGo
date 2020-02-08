@@ -41,7 +41,7 @@ func main() {
 		computerVSHuman()
 	} else {
 		// fmt.Println("Usage: ./engine.go [-uci|-cpu|-human] [-profile]")
-		computerVSComputer()
+		xBoard()
 	}
 
 }
@@ -63,7 +63,7 @@ func computerVSHuman() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		zg.inCheck, _ = zg.evaluate(game, zg.inCheck)
+		zg.inCheck, _ = zg.search(game, zg.inCheck)
 		fmt.Println(game.Position().Board().Draw())
 		fmt.Println(game.Position().String())
 
@@ -104,11 +104,11 @@ func computerVSComputer() {
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	for {
-		zg2.inCheck, _ = zg.evaluate(game, zg.inCheck)
+		zg2.inCheck, _ = zg.search(game, zg.inCheck)
 		fmt.Println(game.Position().Board().Draw())
 		fmt.Println(game.Position().String())
 
-		zg.inCheck, _ = zg2.evaluate(game, zg2.inCheck)
+		zg.inCheck, _ = zg2.search(game, zg2.inCheck)
 		fmt.Println(game.Position().Board().Draw())
 		fmt.Println(game.Position().String())
 
@@ -146,7 +146,7 @@ func xBoard() {
 			response("feature ping=1\n")
 			response("feature san=0\n")
 			response("feature sigint=0\n")
-			response("feature sigterm=0\n")
+			// response("feature sigterm=0\n")
 			response("feature setboard=1\n")
 			response("feature debug=1\n")
 			response("feature time=0\n")
@@ -221,7 +221,7 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 		response(fmt.Sprintf("move %v\n", move.String()))
 		zg.inCheck = false
 	} else {
-		inCheck, move := zg.evaluate(game, zg.inCheck)
+		inCheck, move := zg.search(game, zg.inCheck)
 		response(fmt.Sprintf("move %v\n", move.String()))
 		zg.inCheck = inCheck
 	}

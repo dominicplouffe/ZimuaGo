@@ -31,19 +31,19 @@ func TestNegaMax(t *testing.T) {
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	siblings := make([]MoveScore, 1)
-	res := zg.alphaBetaNM(game.Position(), 1, -9999999999, 9999999999, true, 1, false, false, siblings)
+	res := zg.alphaBetaNM(game.Position(), 1, -9999999999, 9999999999, 1, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != 55 {
 		t.Error("Depth 1 NM is incorrect")
 	}
 
 	siblings = make([]MoveScore, 2)
-	res = zg.alphaBetaNM(game.Position(), 2, -9999999999, 9999999999, true, 2, false, false, siblings)
+	res = zg.alphaBetaNM(game.Position(), 2, -9999999999, 9999999999, 2, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != -77 {
 		t.Error("Depth 2 is incorrect")
 	}
 
 	siblings = make([]MoveScore, 3)
-	res = zg.alphaBetaNM(game.Position(), 3, -9999999999, 9999999999, true, 3, false, false, siblings)
+	res = zg.alphaBetaNM(game.Position(), 3, -9999999999, 9999999999, 3, false, false, siblings)
 	if res.move.String() != "b1c3" || res.score != 123 {
 		t.Error("Depth 3 is incorrect")
 	}
@@ -106,7 +106,7 @@ func TestCheckmate1(t *testing.T) {
 	fen, _ := chess.FEN("rn1k2nr/p1qpp1Q1/1p3pBP/2pP4/P4B2/2P5/1P3PP1/R3K2R w KQ - 5 22")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
-	_, mv := zg.evaluate(game, false)
+	_, mv := zg.search(game, false)
 
 	if mv.String() != "g7f8" {
 		t.Error("Move should be g7f8")
@@ -125,7 +125,7 @@ func TestCheckmate2(t *testing.T) {
 	fen, _ := chess.FEN("8/3R1Q2/8/8/4k1B1/7P/P4PP1/4K2R w K - 15 46")
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
-	_, mv := zg.evaluate(game, false)
+	_, mv := zg.search(game, false)
 
 	if mv.String() != "f7f5" {
 		t.Error("Move should be g7f8")
@@ -144,7 +144,7 @@ func TestCheckmate3(t *testing.T) {
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	siblings := make([]MoveScore, 9)
-	res := zg.alphaBetaNM(game.Position(), 9, -9999999999, 9999999999, true, 3, false, false, siblings)
+	res := zg.alphaBetaNM(game.Position(), 9, -9999999999, 9999999999, 3, false, false, siblings)
 
 	moves := ""
 	for i := len(siblings) - 1; i >= 0; i-- {

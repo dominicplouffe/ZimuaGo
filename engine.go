@@ -236,6 +236,9 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
 	var pos uint64 = 1
 
+	var allBoard uint64 = 18446744073709551615
+	_ = allBoard
+
 	for i := 0; i < 64; i++ {
 
 		if allWhiteBBs&pos > 0 {
@@ -283,6 +286,7 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 		}
 
 		pos = pos << 1
+		fmt.Println(pos)
 	}
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
@@ -291,33 +295,7 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	return scoreWhite - scoreBlack
 }
 
-func (zg *ZimuaGame) qsearch(pos *chess.Position, standPat int) int {
-
-	legalMoves := pos.ValidMoves()
-
-	for _, move := range legalMoves {
-		if !move.HasTag(chess.Capture) {
-			continue
-		}
-
-		newPos := pos.Update(move)
-		score := zg.pieceScoring(newPos.Board())
-
-		if pos.Turn() == chess.Black {
-			if score < standPat {
-				return zg.minValue
-			}
-		} else {
-			if score > standPat {
-				return zg.minValue
-			}
-		}
-	}
-
-	return standPat
-}
-
-func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta int, maxPlayer bool, startDepth int, inCheck bool, isNull bool, siblings []MoveScore) MoveScore {
+func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta int, startDepth int, inCheck bool, isNull bool, siblings []MoveScore) MoveScore {
 
 	if depth == 0 {
 		score := 0
@@ -359,7 +337,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		status := newPos.Status()
 		if status != chess.Stalemate && status != chess.FivefoldRepetition {
 			newSiblings := make([]MoveScore, depth-3)
-			nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, true, startDepth, false, true, newSiblings)
+			nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, startDepth, false, true, newSiblings)
 
 			if -nmRes.score >= beta {
 				nmRes.score = nmRes.score * -1
@@ -382,40 +360,36 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			if moveCount >= 6 {
 				newDepth--
 			}
+
+			if moveCount >= 8 && depth >= 6 {
+				newDepth--
+			}
 		}
 
 		newPos := pos.Update(&mv.move)
 
 		newSiblings := make([]MoveScore, newDepth)
-		res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, false, startDepth, mv.inCheck, false, newSiblings)
+		res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 		score := -res.score
 		if score > alpha && isLMR {
 			newSiblings = make([]MoveScore, depth-1)
-			res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, false, startDepth, mv.inCheck, false, newSiblings)
+			res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 			score = -res.score
-		}
-		status := newPos.Status()
-		if status == chess.Checkmate {
-			score = checkmate
 		}
 
 		newValue := max(value, score)
 		if newValue > value {
+			value = newValue
+			bestMove.move = mv.move
+			bestMove.score = newValue
 
-			if status != chess.Stalemate && status != chess.FivefoldRepetition {
-
-				value = newValue
-				bestMove.move = mv.move
-				bestMove.score = newValue
-
-				for i, s := range newSiblings {
-					if s.move.String() != "a1a1" {
-						siblings[i] = s
-					}
+			for i, s := range newSiblings {
+				if s.move.String() != "a1a1" {
+					siblings[i] = s
 				}
-
-				siblings[depth-1] = bestMove
 			}
+
+			siblings[depth-1] = bestMove
 		}
 		alpha = max(alpha, value)
 
@@ -429,28 +403,18 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	return bestMove
 }
 
-func (zg *ZimuaGame) calcMove(g *chess.Game, depth int, alpha int, beta int, inCheck bool, siblings []MoveScore) MoveScore {
-	maxPlayer := true
-	if g.Position().Turn() == chess.Black {
-		maxPlayer = false
-	}
-	res := zg.alphaBetaNM(g.Position(), depth, alpha, beta, maxPlayer, depth, inCheck, false, siblings)
+func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
-	return res
-}
+	// if zg.doOpen {
 
-func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
+	// 	openMove := zg.openingMove(g)
 
-	if zg.doOpen {
-
-		openMove := zg.openingMove(g)
-
-		if openMove != nil {
-			g.Move(openMove)
-			return false, *openMove
-		}
-		zg.doOpen = false
-	}
+	// 	if openMove != nil {
+	// 		g.Move(openMove)
+	// 		return false, *openMove
+	// 	}
+	// 	zg.doOpen = false
+	// }
 
 	minEval := zg.minValue
 	maxEval := zg.maxValue
@@ -475,7 +439,7 @@ func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		ply++
 
 		siblings := make([]MoveScore, ply)
-		res := zg.calcMove(g, ply, alpha, beta, inCheck, siblings)
+		res := zg.alphaBetaNM(g.Position(), ply, alpha, beta, ply, inCheck, false, siblings)
 
 		if math.Abs(float64(res.score)) == float64(checkmate) {
 			bestMove = res.move
@@ -547,9 +511,6 @@ func (zg *ZimuaGame) openingMove(game *chess.Game) *chess.Move {
 	prevMoves := game.Moves()
 	moveIndex := len(prevMoves)
 	opennings := Possible(game.Moves())
-
-	_ = opennings
-	_ = prevMoves
 
 	possibleOpenings := []*Opening{}
 	for _, o := range opennings {
