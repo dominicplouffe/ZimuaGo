@@ -236,8 +236,6 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
 	var pos uint64 = 1
 
-	// fmt.Println(strconv.FormatUint(bbWhitePawn, 2))
-
 	for i := 0; i < 64; i++ {
 
 		if allWhiteBBs&pos > 0 {
@@ -422,6 +420,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		alpha = max(alpha, value)
 
 		if alpha >= beta {
+			zg.moveSearched += len(legalMoves) - moveCount
 			break
 		}
 
@@ -442,16 +441,16 @@ func (zg *ZimuaGame) calcMove(g *chess.Game, depth int, alpha int, beta int, inC
 
 func (zg *ZimuaGame) evaluate(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
-	// if zg.doOpen {
+	if zg.doOpen {
 
-	// 	openMove := zg.openingMove(g)
+		openMove := zg.openingMove(g)
 
-	// 	if openMove != nil {
-	// 		g.Move(openMove)
-	// 		return false, *openMove
-	// 	}
-	// 	zg.doOpen = false
-	// }
+		if openMove != nil {
+			g.Move(openMove)
+			return false, *openMove
+		}
+		zg.doOpen = false
+	}
 
 	minEval := zg.minValue
 	maxEval := zg.maxValue
