@@ -124,7 +124,7 @@ func xBoard() {
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
-	zg := Zimua("Zimua Chess Engine", 5.0)
+	zg := Zimua("Zimua Chess Engine v1.1", 5.0)
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -135,7 +135,7 @@ func xBoard() {
 
 		if cmd == "xboard" {
 
-			response("tellics say     %%s Zimua Engine\n")
+			response("tellics say     %%s Zimua Engine v1.1\n")
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))

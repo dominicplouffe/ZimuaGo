@@ -183,3 +183,38 @@ func TestBitBoards(t *testing.T) {
 		}
 	}
 }
+
+// func TestPieceScoringPerformance(t *testing.T) {
+
+// 	// bitPositions(60517188712267776)
+// 	// bitCount(60517188712267776)
+// 	zg := Zimua("White", 5.0)
+
+// 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
+// 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+// 	zg.pieceScoring(game.Position().Board())
+
+// 	for j := 0; j < 7; j++ {
+
+// 		for i, v := range posPointsBlack[j] {
+// 			fmt.Printf("case %v:  return %v\n  ", i, v)
+// 		}
+// 		fmt.Println("")
+// 		fmt.Println("")
+// 	}
+
+// 	score := 0
+// 	start := time.Now()
+
+// 	for i := 0; i < 10000000; i++ {
+// 		score = zg.pieceScoring(game.Position().Board())
+// 		_ = score
+
+// 	}
+
+// 	end := time.Now()
+// 	elapsed := end.Sub(start).Seconds()
+
+// 	fmt.Println(elapsed)
+
+// }
