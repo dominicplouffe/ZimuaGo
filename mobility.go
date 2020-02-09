@@ -1,5 +1,9 @@
 package main
 
+import (
+	"math"
+)
+
 func blackPawnMobility(p int) int {
 	switch p {
 	case 0:
@@ -1618,4 +1622,256 @@ func whiteKingMobility(p int) int {
 	}
 
 	return 0
+}
+
+func getBishopMobilitySquares(p uint64, colorSquares uint64, oppSquares uint64) (int, []uint64) {
+
+	mobility := 0
+	var squares []uint64
+
+	if p == 0 {
+		return mobility, squares
+	}
+
+	newp := p
+	for getFile(newp) != bbFILEA && getRank(newp) != bbRANK1 {
+		newp = newp >> 9
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			mobility++
+			squares = append(squares, newp)
+			break
+		}
+
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for getFile(newp) != bbFILEH && getRank(newp) != bbRANK8 {
+		newp = newp << 9
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			mobility++
+			squares = append(squares, newp)
+			break
+		}
+
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for getFile(newp) != bbFILEH && getRank(newp) != bbRANK1 {
+		newp = newp >> 7
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			mobility++
+			squares = append(squares, newp)
+			break
+		}
+
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for getFile(newp) != bbFILEA && getRank(newp) != bbRANK8 {
+		newp = newp << 7
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			mobility++
+			squares = append(squares, newp)
+			break
+		}
+
+		squares = append(squares, newp)
+		mobility++
+	}
+
+	return mobility, squares
+}
+
+func getRookMobilitySquares(p uint64, colorSquares uint64, oppSquares uint64) (int, []uint64) {
+
+	mobility := 0
+	var squares []uint64
+
+	if p == 0 {
+		return mobility, squares
+	}
+
+	file := getFile(p)
+	rank := getRank(p)
+
+	newp := p
+	for i := 0; i < 7; i++ {
+		newp = newp << 1
+		if getRank(newp) != rank {
+			break
+		}
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			squares = append(squares, newp)
+			mobility++
+			break
+		}
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for i := 0; i < 7; i++ {
+		newp = newp >> 1
+		if getRank(newp) != rank {
+			break
+		}
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			squares = append(squares, newp)
+			mobility++
+			break
+		}
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for i := 0; i < 7; i++ {
+		newp = newp << 8
+		if getFile(newp) != file {
+			break
+		}
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			squares = append(squares, newp)
+			mobility++
+			break
+		}
+		squares = append(squares, newp)
+		mobility++
+	}
+	newp = p
+	for i := 0; i < 7; i++ {
+		newp = newp >> 8
+		if getFile(newp) != file {
+			break
+		}
+		if newp&colorSquares != 0 {
+			break
+		}
+		if newp&oppSquares != 0 {
+			squares = append(squares, newp)
+			mobility++
+			break
+		}
+		squares = append(squares, newp)
+		mobility++
+	}
+
+	return mobility, squares
+}
+
+func getKnightMobilitySquares(p uint64, colorSquares uint64) (int, []uint64) {
+
+	mobility := 0
+	var squares []uint64
+
+	if p == 0 {
+		return mobility, squares
+	}
+
+	moves := [8]int8{15, 17, 6, 10, -6, -10, -15, -17}
+	file := getFile(p)
+	rank := getRank(p)
+
+	for _, m := range moves {
+		if file == bbFILEA || file == bbFILEB {
+			if m == 6 || m == -10 {
+				continue
+			}
+
+		}
+		if file == bbFILEA {
+			if m == 15 || m == -17 {
+				continue
+			}
+
+		}
+		if file == bbFILEG || file == bbFILEH {
+			if m == 10 || m == -10 {
+				continue
+			}
+		}
+		if file == bbFILEH {
+			if m == 17 || m == -17 {
+				continue
+			}
+
+		}
+
+		if rank == bbRANK7 || rank == bbRANK8 {
+			if m == 15 || m == 17 {
+				continue
+			}
+		}
+		if rank == bbRANK8 {
+			if m == 6 || m == 10 {
+				continue
+			}
+		}
+		if rank == bbRANK1 || rank == bbRANK2 {
+			if m == -15 || m == -17 {
+				continue
+			}
+		}
+		if rank == bbRANK1 {
+			if m == -6 || m == -10 {
+				continue
+			}
+		}
+
+		var pos uint64 = 0
+		if m > 0 {
+			pos = p << m
+		} else {
+			pos = p >> int(math.Abs(float64(m)))
+		}
+
+		if pos&colorSquares == 0 {
+			mobility++
+			squares = append(squares, pos)
+		}
+
+	}
+
+	return mobility, squares
+}
+
+func getQueenMobilitySquares(p uint64, colorSquares uint64, oppSquares uint64) (int, []uint64) {
+
+	mobilityBishop, squaresBishop := getBishopMobilitySquares(p, colorSquares, oppSquares)
+	mobilityRook, squaresRook := getRookMobilitySquares(p, colorSquares, oppSquares)
+
+	mobility := mobilityBishop + mobilityRook
+	var squares []uint64
+
+	for _, s := range squaresBishop {
+		squares = append(squares, s)
+	}
+
+	for _, s := range squaresRook {
+		squares = append(squares, s)
+	}
+
+	return mobility, squares
 }

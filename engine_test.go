@@ -33,19 +33,19 @@ func TestNegaMax(t *testing.T) {
 	siblings := make([]MoveScore, 1)
 	res := zg.alphaBetaNM(game.Position(), 1, -9999999999, 9999999999, 1, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != 55 {
-		t.Error("Depth 1 NM is incorrect")
+		t.Error("Depth 1 NM is incorrect", res.move.String())
 	}
 
 	siblings = make([]MoveScore, 2)
 	res = zg.alphaBetaNM(game.Position(), 2, -9999999999, 9999999999, 2, false, false, siblings)
 	if res.move.String() != "e2e4" || res.score != -77 {
-		t.Error("Depth 2 is incorrect")
+		t.Error("Depth 2 is incorrect", res.move.String())
 	}
 
 	siblings = make([]MoveScore, 3)
 	res = zg.alphaBetaNM(game.Position(), 3, -9999999999, 9999999999, 3, false, false, siblings)
 	if res.move.String() != "b1c3" || res.score != 123 {
-		t.Error("Depth 3 is incorrect")
+		t.Error("Depth 3 is incorrect", res.move.String())
 	}
 }
 

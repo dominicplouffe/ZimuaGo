@@ -77,14 +77,26 @@ func max(x, y int) int {
 	return y
 }
 
-// func bitCount(n uint64) int {
-// 	var count int = 0
-// 	for n > 0 {
-// 		count = count + 1
-// 		n = n & (n - 1)
-// 	}
-// 	return count
-// }
+func bitCount(n uint64) int {
+	var count int = 0
+	for n > 0 {
+		count = count + 1
+		n = n & (n - 1)
+	}
+	return count
+}
+
+func getCenterScore(squares []uint64, centerPoints int, outerCenterPoints int) (int, int) {
+	for _, s := range squares {
+		if s == bbCENTER {
+			centerPoints++
+		} else if s == bbOUTERCENTER {
+			outerCenterPoints++
+		}
+	}
+
+	return centerPoints, outerCenterPoints
+}
 
 // func bitPositions(n uint64, scoreMap []int, value int) {
 // 	var position int = 1
@@ -226,8 +238,13 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 
 	var pieceScoreWhite int = 0
 	var piecePosWhite int = 0
+	var centerPointsWhite int = 0
+	var outerCenterPointsWhite int = 0
+
 	var pieceScoreBlack int = 0
 	var piecePosBlack int = 0
+	var centerPointsBlack int = 0
+	var outerCenterPointsBlack int = 0
 
 	var bitboards []uint64 = b.Bitboards()
 	var bbWhiteKing uint64 = bitboards[0]
@@ -244,59 +261,102 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	var bbBlackPawn uint64 = bitboards[11]
 	var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
 	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
-	var pos uint64 = 1
+	// var pos uint64 = 1
 
-	for i := 0; i < 64; i++ {
+	pieceScoreWhite += bitCount(bbWhiteKing) * 60000
+	pieceScoreWhite += bitCount(bbWhiteQueen) * 929
+	pieceScoreWhite += bitCount(bbWhiteRook) * 479
+	pieceScoreWhite += bitCount(bbWhiteBishop) * 320
+	pieceScoreWhite += bitCount(bbWhiteKnight) * 280
+	pieceScoreWhite += bitCount(bbWhitePawn) * 100
 
-		if allWhiteBBs&pos > 0 {
-			if bbWhiteKing&pos > 0 {
-				pieceScoreWhite += 60000
-				piecePosWhite += whiteKingMobility(i)
-			} else if bbWhiteQueen&pos > 0 {
-				pieceScoreWhite += 929
-				piecePosWhite += whiteQueenMobility(i)
-			} else if bbWhiteRook&pos > 0 {
-				pieceScoreWhite += 479
-				piecePosWhite += whiteRookMobility(i)
-			} else if bbWhiteBishop&pos > 0 {
-				pieceScoreWhite += 320
-				piecePosWhite += whiteBishopMobility(i)
-			} else if bbWhiteKnight&pos > 0 {
-				pieceScoreWhite += 280
-				piecePosWhite += whiteKnightMobility(i)
-			} else if bbWhitePawn&pos > 0 {
-				pieceScoreWhite += 100
-				piecePosWhite += whitePawnMobility(i)
-			}
-		}
+	pieceScoreBlack += bitCount(bbBlackKing) * 60000
+	pieceScoreBlack += bitCount(bbBlackQueen) * 929
+	pieceScoreBlack += bitCount(bbBlackRook) * 479
+	pieceScoreBlack += bitCount(bbBlackBishop) * 320
+	pieceScoreBlack += bitCount(bbBlackKnight) * 280
+	pieceScoreBlack += bitCount(bbBlackPawn) * 100
 
-		if allBlackBBs&pos > 0 {
-			if bbBlackKing&pos > 0 {
-				pieceScoreBlack += 60000
-				piecePosBlack += blackKingMobility(i)
-			} else if bbBlackQueen&pos > 0 {
-				pieceScoreBlack += 929
-				piecePosBlack += blackQueenMobility(i)
-			} else if bbBlackRook&pos > 0 {
-				pieceScoreBlack += 479
-				piecePosBlack += blackRookMobility(i)
-			} else if bbBlackBishop&pos > 0 {
-				pieceScoreBlack += 320
-				piecePosBlack += blackBishopMobility(i)
-			} else if bbBlackKnight&pos > 0 {
-				pieceScoreBlack += 280
-				piecePosBlack += blackKnightMobility(i)
-			} else if bbBlackPawn&pos > 0 {
-				pieceScoreBlack += 100
-				piecePosBlack += blackPawnMobility(i)
-			}
-		}
+	wnmob, wnsqs := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
+	wrmob, wrsqs := getRookMobilitySquares(bbWhiteRook, allWhiteBBs, allBlackBBs)
+	wbmob, wbsqs := getBishopMobilitySquares(bbWhiteBishop, allWhiteBBs, allBlackBBs)
+	wqmob, wqsqs := getQueenMobilitySquares(bbWhiteQueen, allWhiteBBs, allBlackBBs)
 
-		pos = pos << 1
-	}
+	bnmob, bnsqs := getKnightMobilitySquares(bbBlackKnight, allBlackBBs)
+	brmob, brsqs := getRookMobilitySquares(bbBlackRook, allBlackBBs, allWhiteBBs)
+	bbmob, bbsqs := getBishopMobilitySquares(bbBlackBishop, allBlackBBs, allWhiteBBs)
+	bqmob, bqsqs := getQueenMobilitySquares(bbBlackQueen, allBlackBBs, allWhiteBBs)
 
-	scoreWhite := pieceScoreWhite + piecePosWhite
-	scoreBlack := pieceScoreBlack + piecePosBlack
+	piecePosWhite += ((wnmob + wrmob + wbmob + wqmob) * 10)
+	piecePosBlack += ((bnmob + brmob + bbmob + bqmob) * 10)
+
+	centerPointsWhite, outerCenterPointsWhite = getCenterScore(wnsqs, centerPointsWhite, outerCenterPointsWhite)
+	centerPointsWhite, outerCenterPointsWhite = getCenterScore(wrsqs, centerPointsWhite, outerCenterPointsWhite)
+	centerPointsWhite, outerCenterPointsWhite = getCenterScore(wbsqs, centerPointsWhite, outerCenterPointsWhite)
+	centerPointsWhite, outerCenterPointsWhite = getCenterScore(wqsqs, centerPointsWhite, outerCenterPointsWhite)
+
+	centerPointsBlack, outerCenterPointsBlack = getCenterScore(bnsqs, centerPointsBlack, outerCenterPointsBlack)
+	centerPointsBlack, outerCenterPointsBlack = getCenterScore(brsqs, centerPointsBlack, outerCenterPointsBlack)
+	centerPointsBlack, outerCenterPointsBlack = getCenterScore(bbsqs, centerPointsBlack, outerCenterPointsBlack)
+	centerPointsBlack, outerCenterPointsBlack = getCenterScore(bqsqs, centerPointsBlack, outerCenterPointsBlack)
+
+	centerPointsWhite = centerPointsWhite * 15
+	outerCenterPointsWhite = outerCenterPointsWhite * 5
+
+	centerPointsBlack = centerPointsBlack * 15
+	outerCenterPointsBlack = outerCenterPointsBlack * 5
+
+	// for i := 0; i < 64; i++ {
+
+	// 	if allWhiteBBs&pos > 0 {
+	// 		if bbWhiteKing&pos > 0 {
+	// 			pieceScoreWhite += 60000
+	// 			piecePosWhite += whiteKingMobility(i)
+	// 		} else if bbWhiteQueen&pos > 0 {
+	// 			pieceScoreWhite += 929
+	// 			piecePosWhite += whiteQueenMobility(i)
+	// 		} else if bbWhiteRook&pos > 0 {
+	// 			pieceScoreWhite += 479
+	// 			piecePosWhite += whiteRookMobility(i)
+	// 		} else if bbWhiteBishop&pos > 0 {
+	// 			pieceScoreWhite += 320
+	// 			piecePosWhite += whiteBishopMobility(i)
+	// 		} else if bbWhiteKnight&pos > 0 {
+	// 			pieceScoreWhite += 280
+	// 			piecePosWhite += whiteKnightMobility(i)
+	// 		} else if bbWhitePawn&pos > 0 {
+	// 			pieceScoreWhite += 100
+	// 			piecePosWhite += whitePawnMobility(i)
+	// 		}
+	// 	}
+
+	// 	if allBlackBBs&pos > 0 {
+	// 		if bbBlackKing&pos > 0 {
+	// 			pieceScoreBlack += 60000
+	// 			piecePosBlack += blackKingMobility(i)
+	// 		} else if bbBlackQueen&pos > 0 {
+	// 			pieceScoreBlack += 929
+	// 			piecePosBlack += blackQueenMobility(i)
+	// 		} else if bbBlackRook&pos > 0 {
+	// 			pieceScoreBlack += 479
+	// 			piecePosBlack += blackRookMobility(i)
+	// 		} else if bbBlackBishop&pos > 0 {
+	// 			pieceScoreBlack += 320
+	// 			piecePosBlack += blackBishopMobility(i)
+	// 		} else if bbBlackKnight&pos > 0 {
+	// 			pieceScoreBlack += 280
+	// 			piecePosBlack += blackKnightMobility(i)
+	// 		} else if bbBlackPawn&pos > 0 {
+	// 			pieceScoreBlack += 100
+	// 			piecePosBlack += blackPawnMobility(i)
+	// 		}
+	// 	}
+
+	// 	pos = pos << 1
+	// }
+
+	scoreWhite := pieceScoreWhite + piecePosWhite + centerPointsWhite + outerCenterPointsWhite
+	scoreBlack := pieceScoreBlack + piecePosBlack + centerPointsBlack + outerCenterPointsBlack
 
 	return scoreWhite - scoreBlack
 }
@@ -400,7 +460,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		alpha = max(alpha, value)
 
 		if alpha >= beta {
-			zg.moveSearched += len(legalMoves) - moveCount
+			// zg.moveSearched += len(legalMoves) - moveCount
 			break
 		}
 
