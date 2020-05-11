@@ -433,7 +433,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			// fmt.Println("aaa")
 			score = -checkmate
 		} else {
-			score = zg.qsearch(*pos.Board()) // zg.pieceScoring(pos.Board())
+			score = zg.qsearch(pos) // zg.pieceScoring(pos.Board())
 		}
 
 		if pos.Turn() == chess.Black {
