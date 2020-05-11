@@ -54,11 +54,11 @@ func response(value string) {
 
 func computerVSHuman() {
 
-	// fen, _ := chess.FEN("7k/8/8/8/8/Q7/6R1/K7 w - - 0 1")
+	// fen, _ := chess.FEN("3R4/1r3ppk/7p/p7/1B6/2P5/P1b2PPP/6K1 w - - 0 1")
 	// game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-	zg := Zimua("White", 5.0)
+	zg := Zimua("White", 15.0)
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -124,7 +124,7 @@ func xBoard() {
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
-	zg := Zimua("Zimua Chess Engine", 5.0)
+	zg := Zimua("Zimua Chess Engine v2", 5.0)
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -139,7 +139,7 @@ func xBoard() {
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-			zg = Zimua("Zimua Chess Engine", 5.0)
+			zg = Zimua("Zimua Chess Engine v2", 5.0)
 			response("Zimua Ready\n")
 		} else if cmd == "protover 2" {
 			response(fmt.Sprintf("feature myname=\"%v\"\n", zg.name))
@@ -178,6 +178,7 @@ func xBoard() {
 			break
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ := strconv.Atoi(strings.Split(cmd, " ")[2])
+			log.Println(maxTime)
 			zg.timeControl = getTimeControl(float64(maxTime))
 		} else {
 			matched, _ := regexp.MatchString(`^[a-h][1-8][a-h][1-8].?$`, cmd)
@@ -214,17 +215,21 @@ func xBoard() {
 func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	log.Println("start")
 
-	if zg.moveCount < 4 {
-		moves := game.ValidMoves()
-		move := moves[rand.Intn(len(moves))]
-		game.Move(move)
-		response(fmt.Sprintf("move %v\n", move.String()))
-		zg.inCheck = false
-	} else {
-		inCheck, move := zg.search(game, zg.inCheck)
-		response(fmt.Sprintf("move %v\n", move.String()))
-		zg.inCheck = inCheck
-	}
+	// if zg.moveCount < 4 {
+	// 	moves := game.ValidMoves()
+	// 	move := moves[rand.Intn(len(moves))]
+	// 	game.Move(move)
+	// 	response(fmt.Sprintf("move %v\n", move.String()))
+	// 	zg.inCheck = false
+	// } else {
+	// 	inCheck, move := zg.search(game, zg.inCheck)
+	// 	response(fmt.Sprintf("move %v\n", move.String()))
+	// 	zg.inCheck = inCheck
+	// }
+
+	inCheck, move := zg.search(game, zg.inCheck)
+	response(fmt.Sprintf("move %v\n", move.String()))
+	zg.inCheck = inCheck
 
 	zg.moveCount++
 	log.Println("finished")
