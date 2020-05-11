@@ -319,6 +319,9 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	var pieceScoreBlack int = 0
 	var piecePosBlack int = 0
 
+	var bishopWhite int = 0
+	var bishopBlack int = 0
+
 	sm := b.SquareMap()
 	// fmt.Println(sm)
 	for i := 0; i < 64; i++ {
@@ -340,6 +343,7 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 			if val.Type() == chess.Bishop && val.Color() == chess.White {
 				pieceScoreWhite += zg.piecePoints[2]
 				piecePosWhite += zg.posPointsWhite[2][i]
+				bishopWhite++
 			}
 
 			if val.Type() == chess.Rook && val.Color() == chess.White {
@@ -371,6 +375,7 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 			if val.Type() == chess.Bishop && val.Color() == chess.Black {
 				pieceScoreBlack += zg.piecePoints[2]
 				piecePosBlack += zg.posPointsBlack[2][i]
+				bishopBlack++
 			}
 
 			if val.Type() == chess.Rook && val.Color() == chess.Black {
@@ -393,6 +398,14 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
+
+	// Double Bishop Bonus
+	if bishopWhite == 2 {
+		scoreWhite += 75
+	}
+	if bishopBlack == 2 {
+		scoreBlack += 75
+	}
 
 	return scoreWhite - scoreBlack
 }
