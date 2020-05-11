@@ -397,6 +397,34 @@ func (zg *ZimuaGame) pieceScoring(b *chess.Board) int {
 	return scoreWhite - scoreBlack
 }
 
+func (zg *ZimuaGame) qsearch(pos *chess.Position) int {
+
+	board := pos.Board()
+	if pos.Status() == chess.Checkmate {
+		return checkmate
+	}
+
+	standPat := zg.pieceScoring(board)
+
+	legalMoves := pos.ValidMoves()
+	for _, move := range legalMoves {
+		isCapture := move.HasTag(chess.Capture)
+
+		if !isCapture {
+			continue
+		}
+
+		newPos := pos.Update(move)
+		score := zg.pieceScoring(newPos.Board())
+
+		if score < standPat {
+			return score
+		}
+
+	}
+	return standPat
+}
+
 func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta int, startDepth int, inCheck bool, isNull bool, siblings []MoveScore) MoveScore {
 
 	if depth == 0 {
@@ -405,7 +433,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			// fmt.Println("aaa")
 			score = -checkmate
 		} else {
-			score = zg.pieceScoring(pos.Board())
+			score = zg.qsearch(*pos.Board()) // zg.pieceScoring(pos.Board())
 		}
 
 		if pos.Turn() == chess.Black {
