@@ -127,7 +127,8 @@ func xBoard() {
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
-	zg := Zimua("Zimua Chess Engine v2", float64(maxTime))
+	zg := Zimua("Zimua v2 bishop", float64(maxTime))
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -142,7 +143,7 @@ func xBoard() {
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-			zg = Zimua("Zimua Chess Engine v2", float64(maxTime))
+			zg = Zimua("Zimua v2 bishop", float64(maxTime))
 			response("Zimua Ready\n")
 		} else if cmd == "protover 2" {
 			response(fmt.Sprintf("feature myname=\"%v\"\n", zg.name))
