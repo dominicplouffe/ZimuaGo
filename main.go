@@ -121,10 +121,14 @@ func computerVSComputer() {
 }
 
 func xBoard() {
+
+	isForceGame := false
+	maxTime := 5
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
 	zg := Zimua("Zimua v2 bishop", 5.0)
+
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
@@ -176,10 +180,13 @@ func xBoard() {
 			response("#Playing black\n")
 		} else if cmd == "quit" {
 			break
+
+		} else if cmd == "force" {
+			isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
-			maxTime, _ := strconv.Atoi(strings.Split(cmd, " ")[2])
-			log.Println(maxTime)
-			zg.timeControl = getTimeControl(float64(maxTime))
+			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
+			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+			zg = Zimua("Zimua Chess Engine v2", float64(maxTime))
 		} else {
 			matched, _ := regexp.MatchString(`^[a-h][1-8][a-h][1-8].?$`, cmd)
 
@@ -201,7 +208,7 @@ func xBoard() {
 
 				if game.Outcome() != chess.NoOutcome {
 					response("#game_over\n")
-				} else {
+				} else if !isForceGame {
 					xBoardPlay(game, &zg)
 				}
 			} else {
