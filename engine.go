@@ -311,12 +311,6 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 	sort.Slice(moves, func(i, j int) bool {
 		return moves[i].score > moves[j].score
 	})
-
-	// sm := pos.Board().SquareMap()
-
-	// if val, ok := sm[chess.B1]; ok {
-	// 	fmt.Println(val, moves)
-	// }
 	return moves
 }
 
@@ -334,80 +328,6 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	if p.Status() == chess.Checkmate {
 		return checkmate
 	}
-
-	// sm := b.SquareMap()
-	// // fmt.Println(sm)
-	// for i := 0; i < 64; i++ {
-	// 	sq := chess.Square(i)
-	// 	if val, ok := sm[sq]; ok {
-	// 		// fmt.Println("sq", sq, "i", i)
-	// 		// fmt.Println("val", val)
-
-	// 		if val.Type() == chess.Pawn && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[0]
-	// 			piecePosWhite += zg.posPointsWhite[0][i]
-	// 		}
-
-	// 		if val.Type() == chess.Knight && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[1]
-	// 			piecePosWhite += zg.posPointsWhite[1][i]
-	// 		}
-
-	// 		if val.Type() == chess.Bishop && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[2]
-	// 			piecePosWhite += zg.posPointsWhite[2][i]
-	// 			bishopWhite++
-	// 		}
-
-	// 		if val.Type() == chess.Rook && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[3]
-	// 			piecePosWhite += zg.posPointsWhite[3][i]
-	// 		}
-
-	// 		if val.Type() == chess.Queen && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[4]
-	// 			piecePosWhite += zg.posPointsWhite[4][i]
-	// 		}
-
-	// 		if val.Type() == chess.King && val.Color() == chess.White {
-	// 			pieceScoreWhite += zg.piecePoints[5]
-	// 			piecePosWhite += zg.posPointsWhite[5][i]
-	// 		}
-
-	// 		// Black
-	// 		if val.Type() == chess.Pawn && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[0]
-	// 			piecePosBlack += zg.posPointsBlack[0][i]
-	// 		}
-
-	// 		if val.Type() == chess.Knight && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[1]
-	// 			piecePosBlack += zg.posPointsBlack[1][i]
-	// 		}
-
-	// 		if val.Type() == chess.Bishop && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[2]
-	// 			piecePosBlack += zg.posPointsBlack[2][i]
-	// 			bishopBlack++
-	// 		}
-
-	// 		if val.Type() == chess.Rook && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[3]
-	// 			piecePosBlack += zg.posPointsBlack[3][i]
-	// 		}
-
-	// 		if val.Type() == chess.Queen && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[4]
-	// 			piecePosBlack += zg.posPointsBlack[4][i]
-	// 		}
-
-	// 		if val.Type() == chess.King && val.Color() == chess.Black {
-	// 			pieceScoreBlack += zg.piecePoints[5]
-	// 			piecePosBlack += zg.posPointsBlack[5][i]
-	// 		}
-
-	// 	}
-	// }
 
 	var bitboards []uint64 = b.Bitboards()
 	var bbWhiteKing uint64 = bitboards[0]
@@ -602,7 +522,6 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			score = score * -1
 		}
 
-		// fmt.Println(score)
 		mv := zg.createMoveScore(zg.nilMove, score, false)
 		return mv
 	}
@@ -610,13 +529,14 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	legalMoves := zg.getMoves(pos, depth)
 
 	if len(legalMoves) == 0 {
-		if pos.Turn() == chess.White {
-			return MoveScore{
-				score: checkmate,
-			}
+
+		score := zg.qsearch(pos)
+		if pos.Turn() == chess.Black {
+			score = score * -1
 		}
+
 		return MoveScore{
-			score: -checkmate,
+			score: score,
 		}
 	}
 

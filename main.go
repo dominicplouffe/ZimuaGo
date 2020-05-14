@@ -230,18 +230,6 @@ func xBoard() {
 func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	log.Println("start")
 
-	// if zg.moveCount < 4 {
-	// 	moves := game.ValidMoves()
-	// 	move := moves[rand.Intn(len(moves))]
-	// 	game.Move(move)
-	// 	response(fmt.Sprintf("move %v\n", move.String()))
-	// 	zg.inCheck = false
-	// } else {
-	// 	inCheck, move := zg.search(game, zg.inCheck)
-	// 	response(fmt.Sprintf("move %v\n", move.String()))
-	// 	zg.inCheck = inCheck
-	// }
-
 	inCheck, move := zg.search(game, zg.inCheck)
 	response(fmt.Sprintf("move %v\n", move.String()))
 	zg.inCheck = inCheck
