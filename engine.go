@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"sort"
 	"time"
 
@@ -651,19 +650,23 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
-	// if zg.doOpen {
+	// bookMove := zg.openingMove(g)
 
-	openMove := zg.openingMove(g)
+	// if bookMove != nil {
+	// 	validMode := false
+	// 	for _, move := range g.ValidMoves() {
+	// 		if move.String() == bookMove.String() {
+	// 			g.Move(bookMove)
+	// 			zg.inCheck = bookMove.HasTag(chess.Check)
+	// 			zg.moveCount++
+	// 			validMode = true
+	// 		}
+	// 	}
 
-	fmt.Println(openMove)
-
-	if openMove != nil {
-		g.Move(openMove)
-		return false, *openMove
-	}
-	// 	zg.doOpen = false
+	// 	if validMode {
+	// 		return zg.inCheck, *bookMove
+	// 	}
 	// }
-
 	minEval := zg.minValue
 	maxEval := zg.maxValue
 	alpha := minEval
@@ -762,22 +765,21 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 }
 
 func (zg *ZimuaGame) openingMove(game *chess.Game) *chess.Move {
-	prevMoves := game.Moves()
-	moveIndex := len(prevMoves)
-	opennings := Possible(game.Moves())
 
-	possibleOpenings := []*Opening{}
-	for _, o := range opennings {
-		moves := o.Game().Moves()
-		if len(moves) > moveIndex {
-			possibleOpenings = append(possibleOpenings, o)
-		}
+	var moves []string
+	for _, mv := range game.Moves() {
+		moves = append(moves, mv.String())
+	}
+	nextMove, found := findMove(moves)
+
+	if !found {
+		return nil
 	}
 
-	if len(possibleOpenings) > 0 {
-		opening := possibleOpenings[rand.Intn(len(possibleOpenings))]
-		moves := opening.Game().Moves()
-		return moves[moveIndex]
+	for _, mv := range game.ValidMoves() {
+		if mv.String() == nextMove {
+			return mv
+		}
 	}
 
 	return nil
