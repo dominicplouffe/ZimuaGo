@@ -190,7 +190,7 @@ func xBoard() {
 		} else if cmd == "exit" {
 			response("#exit\n")
 		} else if cmd == "force" {
-			// isForceGame = true
+			isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
