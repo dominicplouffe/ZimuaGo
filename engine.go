@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"sort"
 	"time"
 
@@ -45,11 +44,10 @@ type ZimuaGame struct {
 	nilMove        chess.Move
 	timeControl    TimeControl
 	inCheck        bool
-	tableAge       int
 	minValue       int
 	maxValue       int
 	name           string
-	doOpen         bool
+	gamestage      int
 }
 
 //Zimua creates an instance of the Zimua chess engine
@@ -67,7 +65,7 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 		timeControl:    getTimeControl(maxMinutes),
 		name:           name,
 		moveCount:      0,
-		doOpen:         true,
+		gamestage:      0,
 	}
 	zg.initGame()
 
@@ -323,6 +321,8 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 
 	var bishopWhite int = 0
 	var bishopBlack int = 0
+	var majorPieceCount int = 0
+
 	b := p.Board()
 
 	if p.Status() == chess.Checkmate {
@@ -376,6 +376,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			wnsqs = append(wnsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[1]
 			piecePosWhite += zg.posPointsWhite[1][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbWhiteBishop & sq
@@ -384,6 +385,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			pieceScoreWhite += zg.piecePoints[2]
 			piecePosWhite += zg.posPointsWhite[2][squareIndexes[sq]]
 			bishopWhite++
+			majorPieceCount++
 		}
 
 		isqr = bbWhiteRook & sq
@@ -391,6 +393,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			wrsqs = append(wrsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[3]
 			piecePosWhite += zg.posPointsWhite[3][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbWhiteQueen & sq
@@ -398,6 +401,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			wqsqs = append(wqsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[4]
 			piecePosWhite += zg.posPointsWhite[4][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbWhiteKing & sq
@@ -421,6 +425,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			bnsqs = append(bnsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[1]
 			piecePosBlack += zg.posPointsBlack[1][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbBlackBishop & sq
@@ -429,6 +434,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			pieceScoreBlack += zg.piecePoints[2]
 			piecePosBlack += zg.posPointsBlack[2][squareIndexes[sq]]
 			bishopBlack++
+			majorPieceCount++
 		}
 
 		isqr = bbBlackRook & sq
@@ -436,6 +442,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			brsqs = append(brsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[3]
 			piecePosBlack += zg.posPointsBlack[3][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbBlackQueen & sq
@@ -443,6 +450,7 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 			bqsqs = append(bqsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[4]
 			piecePosBlack += zg.posPointsBlack[4][squareIndexes[sq]]
+			majorPieceCount++
 		}
 
 		isqr = bbBlackKing & sq
@@ -453,6 +461,10 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 		}
 
 		sq = sq << 1
+	}
+
+	if majorPieceCount <= 5 {
+		zg.gamestage = 2
 	}
 
 	// wnmob, _ := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
@@ -651,17 +663,23 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
-	// if zg.doOpen {
+	bookMove := zg.openingMove(g)
 
-	// 	openMove := zg.openingMove(g)
+	if bookMove != nil {
+		validMode := false
+		for _, move := range g.ValidMoves() {
+			if move.String() == bookMove.String() {
+				g.Move(bookMove)
+				zg.inCheck = bookMove.HasTag(chess.Check)
+				zg.moveCount++
+				validMode = true
+			}
+		}
 
-	// 	if openMove != nil {
-	// 		g.Move(openMove)
-	// 		return false, *openMove
-	// 	}
-	// 	zg.doOpen = false
-	// }
-
+		if validMode {
+			return zg.inCheck, *bookMove
+		}
+	}
 	minEval := zg.minValue
 	maxEval := zg.maxValue
 	alpha := minEval
@@ -760,22 +778,21 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 }
 
 func (zg *ZimuaGame) openingMove(game *chess.Game) *chess.Move {
-	prevMoves := game.Moves()
-	moveIndex := len(prevMoves)
-	opennings := Possible(game.Moves())
 
-	possibleOpenings := []*Opening{}
-	for _, o := range opennings {
-		moves := o.Game().Moves()
-		if len(moves) > moveIndex {
-			possibleOpenings = append(possibleOpenings, o)
-		}
+	var moves []string
+	for _, mv := range game.Moves() {
+		moves = append(moves, mv.String())
+	}
+	nextMove, found := findMove(moves)
+
+	if !found {
+		return nil
 	}
 
-	if len(possibleOpenings) > 0 {
-		opening := possibleOpenings[rand.Intn(len(possibleOpenings))]
-		moves := opening.Game().Moves()
-		return moves[moveIndex]
+	for _, mv := range game.ValidMoves() {
+		if mv.String() == nextMove {
+			return mv
+		}
 	}
 
 	return nil

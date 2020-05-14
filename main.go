@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2 bitscore"
+var name = "Zimua v2 open"
 
 func main() {
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_open.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -189,6 +189,10 @@ func xBoard() {
 			response("#.\n")
 		} else if cmd == "exit" {
 			response("#exit\n")
+		} else if strings.HasPrefix(cmd, "st") {
+			// moveTime, _ := strconv.Atoi(cmd[3:])
+			// zg.timeControl.timePerMove = float64(moveTime)
+			// response(fmt.Sprintf("# %v\n", moveTime))
 		} else if cmd == "force" {
 			isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
@@ -231,6 +235,7 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	log.Println("start")
 
 	inCheck, move := zg.search(game, zg.inCheck)
+	response(fmt.Sprintf("name %v\n", zg.name))
 	response(fmt.Sprintf("move %v\n", move.String()))
 	zg.inCheck = inCheck
 
