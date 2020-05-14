@@ -190,7 +190,7 @@ func xBoard() {
 		} else if cmd == "exit" {
 			response("#exit\n")
 		} else if cmd == "force" {
-			isForceGame = true
+			// isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -212,12 +212,6 @@ func xBoard() {
 				if !foundMove {
 					response(fmt.Sprintf("illegal move: %v", cmd))
 					continue
-				}
-
-				currentScore := zg.pieceScoring(game.Position())
-
-				if currentScore > 1000 {
-					response("resign")
 				}
 
 				if game.Outcome() != chess.NoOutcome {
@@ -254,6 +248,17 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 
 	zg.moveCount++
 	log.Println("finished")
+
+	score := zg.pieceScoring(game.Position())
+	if game.Position().Turn() == chess.White {
+		if score > 1000 {
+			response("resign\n")
+		}
+	} else {
+		if score < -1000 {
+			response("resign\n")
+		}
+	}
 
 	if game.Position().Status() == chess.Checkmate {
 		response("#checkmate\n")
