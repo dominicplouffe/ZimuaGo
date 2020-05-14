@@ -653,12 +653,14 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 
 	// if zg.doOpen {
 
-	// 	openMove := zg.openingMove(g)
+	openMove := zg.openingMove(g)
 
-	// 	if openMove != nil {
-	// 		g.Move(openMove)
-	// 		return false, *openMove
-	// 	}
+	fmt.Println(openMove)
+
+	if openMove != nil {
+		g.Move(openMove)
+		return false, *openMove
+	}
 	// 	zg.doOpen = false
 	// }
 
