@@ -189,6 +189,10 @@ func xBoard() {
 			response("#.\n")
 		} else if cmd == "exit" {
 			response("#exit\n")
+		} else if strings.HasPrefix(cmd, "st") {
+			// moveTime, _ := strconv.Atoi(cmd[3:])
+			// zg.timeControl.timePerMove = float64(moveTime)
+			// response(fmt.Sprintf("# %v\n", moveTime))
 		} else if cmd == "force" {
 			isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {

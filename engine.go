@@ -463,6 +463,10 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 		sq = sq << 1
 	}
 
+	if majorPieceCount <= 5 {
+		zg.gamestage = 2
+	}
+
 	// wnmob, _ := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
 	// wrmob := getRookMobilitySquares(wrsqs, allWhiteBBs, allBlackBBs)
 	// wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
