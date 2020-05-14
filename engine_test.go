@@ -22,6 +22,38 @@ func TestPieceInCheckmate(t *testing.T) {
 	}
 }
 
+func TestPieceInFull(t *testing.T) {
+
+	zg := Zimua("White", 5.0)
+
+	fen, _ := chess.FEN("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	score := zg.pieceScoring(game.Position())
+
+	fmt.Println(chess.B1)
+
+	if score != 0 {
+		t.Error("Piece scoring should be 0", score)
+	}
+}
+
+func TestPieceScoring(t *testing.T) {
+
+	zg := Zimua("White", 5.0)
+
+	fen, _ := chess.FEN("rq2k2r/pp1nbpp1/2p1pn2/2Pp4/3P2pP/2N1PP2/PPQ3P1/1K1RBB1R w Kkq - 0 1")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	score := zg.pieceScoring(game.Position())
+
+	fmt.Println(chess.B1)
+
+	if score != 199 {
+		t.Error("Piece scoring should be 199", score)
+	}
+}
+
 func TestPieceInCheckmateQsearch(t *testing.T) {
 
 	zg := Zimua("White", 5.0)
@@ -61,36 +93,36 @@ func TestPieceInCheckmateAlphaBeta(t *testing.T) {
 	}
 }
 
-func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
+// func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
 
-	zg := Zimua("White", 5.0)
+// 	zg := Zimua("White", 5.0)
 
-	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
-	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
-	ply := 6
+// 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
+// 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+// 	ply := 6
 
-	siblings := make([]MoveScore, ply)
-	res := zg.alphaBetaNM(
-		game.Position(),
-		ply,
-		-zg.minValue,
-		-zg.maxValue,
-		ply,
-		false,
-		false,
-		siblings,
-	)
+// 	siblings := make([]MoveScore, ply)
+// 	res := zg.alphaBetaNM(
+// 		game.Position(),
+// 		ply,
+// 		-zg.minValue,
+// 		-zg.maxValue,
+// 		ply,
+// 		false,
+// 		false,
+// 		siblings,
+// 	)
 
-	smoves := ""
-	for i := len(siblings) - 1; i >= 0; i-- {
-		smoves += siblings[i].move.String() + " "
-	}
-	fmt.Println(smoves)
+// 	smoves := ""
+// 	for i := len(siblings) - 1; i >= 0; i-- {
+// 		smoves += siblings[i].move.String() + " "
+// 	}
+// 	fmt.Println(smoves)
 
-	if res.score != 99999998 {
-		t.Error("Piece scoring should be 99999998", res.score)
-	}
-}
+// 	if res.score != 99999998 {
+// 		t.Error("Piece scoring should be 99999998", res.score)
+// 	}
+// }
 
 func TestPieceInCheckmateAlphaBetaNextMoveCMWhite(t *testing.T) {
 

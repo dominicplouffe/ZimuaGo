@@ -54,6 +54,8 @@ type ZimuaGame struct {
 
 //Zimua creates an instance of the Zimua chess engine
 func Zimua(name string, maxMinutes float64) ZimuaGame {
+	initSquareIndexes()
+
 	zg := ZimuaGame{
 		posPointsBlack: make(map[int][]int),
 		posPointsWhite: make(map[int][]int),
@@ -333,82 +335,227 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 		return checkmate
 	}
 
-	sm := b.SquareMap()
-	// fmt.Println(sm)
+	// sm := b.SquareMap()
+	// // fmt.Println(sm)
+	// for i := 0; i < 64; i++ {
+	// 	sq := chess.Square(i)
+	// 	if val, ok := sm[sq]; ok {
+	// 		// fmt.Println("sq", sq, "i", i)
+	// 		// fmt.Println("val", val)
+
+	// 		if val.Type() == chess.Pawn && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[0]
+	// 			piecePosWhite += zg.posPointsWhite[0][i]
+	// 		}
+
+	// 		if val.Type() == chess.Knight && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[1]
+	// 			piecePosWhite += zg.posPointsWhite[1][i]
+	// 		}
+
+	// 		if val.Type() == chess.Bishop && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[2]
+	// 			piecePosWhite += zg.posPointsWhite[2][i]
+	// 			bishopWhite++
+	// 		}
+
+	// 		if val.Type() == chess.Rook && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[3]
+	// 			piecePosWhite += zg.posPointsWhite[3][i]
+	// 		}
+
+	// 		if val.Type() == chess.Queen && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[4]
+	// 			piecePosWhite += zg.posPointsWhite[4][i]
+	// 		}
+
+	// 		if val.Type() == chess.King && val.Color() == chess.White {
+	// 			pieceScoreWhite += zg.piecePoints[5]
+	// 			piecePosWhite += zg.posPointsWhite[5][i]
+	// 		}
+
+	// 		// Black
+	// 		if val.Type() == chess.Pawn && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[0]
+	// 			piecePosBlack += zg.posPointsBlack[0][i]
+	// 		}
+
+	// 		if val.Type() == chess.Knight && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[1]
+	// 			piecePosBlack += zg.posPointsBlack[1][i]
+	// 		}
+
+	// 		if val.Type() == chess.Bishop && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[2]
+	// 			piecePosBlack += zg.posPointsBlack[2][i]
+	// 			bishopBlack++
+	// 		}
+
+	// 		if val.Type() == chess.Rook && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[3]
+	// 			piecePosBlack += zg.posPointsBlack[3][i]
+	// 		}
+
+	// 		if val.Type() == chess.Queen && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[4]
+	// 			piecePosBlack += zg.posPointsBlack[4][i]
+	// 		}
+
+	// 		if val.Type() == chess.King && val.Color() == chess.Black {
+	// 			pieceScoreBlack += zg.piecePoints[5]
+	// 			piecePosBlack += zg.posPointsBlack[5][i]
+	// 		}
+
+	// 	}
+	// }
+
+	var bitboards []uint64 = b.Bitboards()
+	var bbWhiteKing uint64 = bitboards[0]
+	var bbWhiteQueen uint64 = bitboards[1]
+	var bbWhiteRook uint64 = bitboards[2]
+	var bbWhiteBishop uint64 = bitboards[3]
+	var bbWhiteKnight uint64 = bitboards[4]
+	var bbWhitePawn uint64 = bitboards[5]
+	var bbBlackKing uint64 = bitboards[6]
+	var bbBlackQueen uint64 = bitboards[7]
+	var bbBlackRook uint64 = bitboards[8]
+	var bbBlackBishop uint64 = bitboards[9]
+	var bbBlackKnight uint64 = bitboards[10]
+	var bbBlackPawn uint64 = bitboards[11]
+	// var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	// var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+
+	// _ = allWhiteBBs
+	// _ = allBlackBBs
+
+	var wpsqs []uint64
+	var wnsqs []uint64
+	var wrsqs []uint64
+	var wbsqs []uint64
+	var wqsqs []uint64
+	var wksqs []uint64
+
+	var bpsqs []uint64
+	var bnsqs []uint64
+	var brsqs []uint64
+	var bbsqs []uint64
+	var bqsqs []uint64
+	var bksqs []uint64
+
+	var sq uint64 = 1
 	for i := 0; i < 64; i++ {
-		sq := chess.Square(i)
-		if val, ok := sm[sq]; ok {
-			// fmt.Println("sq", sq, "i", i)
-			// fmt.Println("val", val)
 
-			if val.Type() == chess.Pawn && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[0]
-				piecePosWhite += zg.posPointsWhite[0][i]
-			}
+		// fmt.Println(sq, len(squareIndexes), squareIndexes[sq])
 
-			if val.Type() == chess.Knight && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[1]
-				piecePosWhite += zg.posPointsWhite[1][i]
-			}
-
-			if val.Type() == chess.Bishop && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[2]
-				piecePosWhite += zg.posPointsWhite[2][i]
-				bishopWhite++
-			}
-
-			if val.Type() == chess.Rook && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[3]
-				piecePosWhite += zg.posPointsWhite[3][i]
-			}
-
-			if val.Type() == chess.Queen && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[4]
-				piecePosWhite += zg.posPointsWhite[4][i]
-			}
-
-			if val.Type() == chess.King && val.Color() == chess.White {
-				pieceScoreWhite += zg.piecePoints[5]
-				piecePosWhite += zg.posPointsWhite[5][i]
-			}
-
-			// Black
-			if val.Type() == chess.Pawn && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[0]
-				piecePosBlack += zg.posPointsBlack[0][i]
-			}
-
-			if val.Type() == chess.Knight && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[1]
-				piecePosBlack += zg.posPointsBlack[1][i]
-			}
-
-			if val.Type() == chess.Bishop && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[2]
-				piecePosBlack += zg.posPointsBlack[2][i]
-				bishopBlack++
-			}
-
-			if val.Type() == chess.Rook && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[3]
-				piecePosBlack += zg.posPointsBlack[3][i]
-			}
-
-			if val.Type() == chess.Queen && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[4]
-				piecePosBlack += zg.posPointsBlack[4][i]
-			}
-
-			if val.Type() == chess.King && val.Color() == chess.Black {
-				pieceScoreBlack += zg.piecePoints[5]
-				piecePosBlack += zg.posPointsBlack[5][i]
-			}
-
+		isqr := bbWhitePawn & sq
+		if isqr > 0 {
+			wpsqs = append(wpsqs, isqr)
+			pieceScoreWhite += zg.piecePoints[0]
+			piecePosWhite += zg.posPointsWhite[0][squareIndexes[sq]]
 		}
+
+		isqr = bbWhiteKnight & sq
+		if isqr > 0 {
+			wnsqs = append(wnsqs, isqr)
+			pieceScoreWhite += zg.piecePoints[1]
+			piecePosWhite += zg.posPointsWhite[1][squareIndexes[sq]]
+		}
+
+		isqr = bbWhiteBishop & sq
+		if isqr > 0 {
+			wbsqs = append(wbsqs, isqr)
+			pieceScoreWhite += zg.piecePoints[2]
+			piecePosWhite += zg.posPointsWhite[2][squareIndexes[sq]]
+			bishopWhite++
+		}
+
+		isqr = bbWhiteRook & sq
+		if isqr > 0 {
+			wrsqs = append(wrsqs, isqr)
+			pieceScoreWhite += zg.piecePoints[3]
+			piecePosWhite += zg.posPointsWhite[3][squareIndexes[sq]]
+		}
+
+		isqr = bbWhiteQueen & sq
+		if isqr > 0 {
+			wqsqs = append(wqsqs, isqr)
+			pieceScoreWhite += zg.piecePoints[4]
+			piecePosWhite += zg.posPointsWhite[4][squareIndexes[sq]]
+		}
+
+		isqr = bbWhiteKing & sq
+		if isqr > 0 {
+			wksqs = append(wksqs, isqr)
+			pieceScoreWhite += zg.piecePoints[5]
+			piecePosWhite += zg.posPointsWhite[5][squareIndexes[sq]]
+		}
+
+		// Black
+
+		isqr = bbBlackPawn & sq
+		if isqr > 0 {
+			bpsqs = append(bpsqs, isqr)
+			pieceScoreBlack += zg.piecePoints[0]
+			piecePosBlack += zg.posPointsBlack[0][squareIndexes[sq]]
+		}
+
+		isqr = bbBlackKnight & sq
+		if isqr > 0 {
+			bnsqs = append(bnsqs, isqr)
+			pieceScoreBlack += zg.piecePoints[1]
+			piecePosBlack += zg.posPointsBlack[1][squareIndexes[sq]]
+		}
+
+		isqr = bbBlackBishop & sq
+		if isqr > 0 {
+			bbsqs = append(bbsqs, isqr)
+			pieceScoreBlack += zg.piecePoints[2]
+			piecePosBlack += zg.posPointsBlack[2][squareIndexes[sq]]
+			bishopBlack++
+		}
+
+		isqr = bbBlackRook & sq
+		if isqr > 0 {
+			brsqs = append(brsqs, isqr)
+			pieceScoreBlack += zg.piecePoints[3]
+			piecePosBlack += zg.posPointsBlack[3][squareIndexes[sq]]
+		}
+
+		isqr = bbBlackQueen & sq
+		if isqr > 0 {
+			bqsqs = append(bqsqs, isqr)
+			pieceScoreBlack += zg.piecePoints[4]
+			piecePosBlack += zg.posPointsBlack[4][squareIndexes[sq]]
+		}
+
+		isqr = bbBlackKing & sq
+		if isqr > 0 {
+			bksqs = append(bksqs, isqr)
+			pieceScoreBlack += zg.piecePoints[5]
+			piecePosBlack += zg.posPointsBlack[5][squareIndexes[sq]]
+		}
+
+		sq = sq << 1
 	}
+
+	// wnmob, _ := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
+	// wrmob := getRookMobilitySquares(wrsqs, allWhiteBBs, allBlackBBs)
+	// wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
+	// wqmob := getQueenMobilitySquares(wqsqs, allWhiteBBs, allBlackBBs)
+
+	// bnmob, _ := getKnightMobilitySquares(bbBlackKnight, allBlackBBs)
+	// brmob, _ := getRookMobilitySquares(bbBlackRook, allBlackBBs, allWhiteBBs)
+	// bbmob, _ := getBishopMobilitySquares(bbBlackBishop, allBlackBBs, allWhiteBBs)
+	// bqmob, _ := getQueenMobilitySquares(bbBlackQueen, allBlackBBs, allWhiteBBs)
+
+	// _ = ((wnmob + wrmob + wbmob + wqmob) * 1)
+	// _ = ((bnmob + brmob + bbmob + bqmob) * 1)
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
+
+	// fmt.Println(wqmob)
+	// fmt.Println(wqsqs)
 
 	// Double Bishop Bonus
 	if bishopWhite == 2 {
