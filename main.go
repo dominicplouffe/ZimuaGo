@@ -16,6 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
+var name = "Zimua v2 bitscore"
 
 func main() {
 
@@ -32,6 +33,8 @@ func main() {
 	}
 	defer f.Close()
 	log.SetOutput(f)
+
+	initSquareIndexes()
 
 	if len(args) >= 1 && args[0] == "-uci" {
 		xBoard()
@@ -127,7 +130,7 @@ func xBoard() {
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
-	zg := Zimua("Zimua v2 bishop", float64(maxTime))
+	zg := Zimua(name, float64(maxTime))
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -143,7 +146,7 @@ func xBoard() {
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-			zg = Zimua("Zimua v2 bishop", float64(maxTime))
+			zg = Zimua(name, float64(maxTime))
 			response("Zimua Ready\n")
 		} else if cmd == "protover 2" {
 			response(fmt.Sprintf("feature myname=\"%v\"\n", zg.name))
@@ -180,13 +183,18 @@ func xBoard() {
 			response("#Playing black\n")
 		} else if cmd == "quit" {
 			break
-
+		} else if cmd == "analyze" {
+			response("#analyze\n")
+		} else if cmd == "." {
+			response("#.\n")
+		} else if cmd == "exit" {
+			response("#exit\n")
 		} else if cmd == "force" {
-			isForceGame = true
+			// isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-			zg = Zimua("Zimua Chess Engine v2", float64(maxTime))
+			zg = Zimua(name, float64(maxTime))
 		} else {
 			matched, _ := regexp.MatchString(`^[a-h][1-8][a-h][1-8].?$`, cmd)
 
@@ -221,18 +229,6 @@ func xBoard() {
 
 func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	log.Println("start")
-
-	// if zg.moveCount < 4 {
-	// 	moves := game.ValidMoves()
-	// 	move := moves[rand.Intn(len(moves))]
-	// 	game.Move(move)
-	// 	response(fmt.Sprintf("move %v\n", move.String()))
-	// 	zg.inCheck = false
-	// } else {
-	// 	inCheck, move := zg.search(game, zg.inCheck)
-	// 	response(fmt.Sprintf("move %v\n", move.String()))
-	// 	zg.inCheck = inCheck
-	// }
 
 	inCheck, move := zg.search(game, zg.inCheck)
 	response(fmt.Sprintf("move %v\n", move.String()))
