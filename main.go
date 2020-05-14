@@ -183,7 +183,12 @@ func xBoard() {
 			response("#Playing black\n")
 		} else if cmd == "quit" {
 			break
-
+		} else if cmd == "analyze" {
+			response("#analyze\n")
+		} else if cmd == "." {
+			response("#.\n")
+		} else if cmd == "exit" {
+			response("#exit\n")
 		} else if cmd == "force" {
 			isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
@@ -207,6 +212,12 @@ func xBoard() {
 				if !foundMove {
 					response(fmt.Sprintf("illegal move: %v", cmd))
 					continue
+				}
+
+				currentScore := zg.pieceScoring(game.Position())
+
+				if currentScore > 1000 {
+					response("resign")
 				}
 
 				if game.Outcome() != chess.NoOutcome {
