@@ -7,7 +7,6 @@ import (
 	"github.com/dominicplouffe/chess"
 )
 
-// Test Example
 func TestPieceInCheckmate(t *testing.T) {
 
 	zg := Zimua("White", 5.0)
@@ -49,7 +48,7 @@ func TestPieceScoring(t *testing.T) {
 
 	fmt.Println(chess.B1)
 
-	if score != 199 {
+	if score != 191 {
 		t.Error("Piece scoring should be 199", score)
 	}
 }
@@ -93,36 +92,36 @@ func TestPieceInCheckmateAlphaBeta(t *testing.T) {
 	}
 }
 
-// func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
+// // func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
 
-// 	zg := Zimua("White", 5.0)
+// // 	zg := Zimua("White", 5.0)
 
-// 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
-// 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
-// 	ply := 6
+// // 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
+// // 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+// // 	ply := 6
 
-// 	siblings := make([]MoveScore, ply)
-// 	res := zg.alphaBetaNM(
-// 		game.Position(),
-// 		ply,
-// 		-zg.minValue,
-// 		-zg.maxValue,
-// 		ply,
-// 		false,
-// 		false,
-// 		siblings,
-// 	)
+// // 	siblings := make([]MoveScore, ply)
+// // 	res := zg.alphaBetaNM(
+// // 		game.Position(),
+// // 		ply,
+// // 		-zg.minValue,
+// // 		-zg.maxValue,
+// // 		ply,
+// // 		false,
+// // 		false,
+// // 		siblings,
+// // 	)
 
-// 	smoves := ""
-// 	for i := len(siblings) - 1; i >= 0; i-- {
-// 		smoves += siblings[i].move.String() + " "
-// 	}
-// 	fmt.Println(smoves)
+// // 	smoves := ""
+// // 	for i := len(siblings) - 1; i >= 0; i-- {
+// // 		smoves += siblings[i].move.String() + " "
+// // 	}
+// // 	fmt.Println(smoves)
 
-// 	if res.score != 99999998 {
-// 		t.Error("Piece scoring should be 99999998", res.score)
-// 	}
-// }
+// // 	if res.score != 99999998 {
+// // 		t.Error("Piece scoring should be 99999998", res.score)
+// // 	}
+// // }
 
 func TestPieceInCheckmateAlphaBetaNextMoveCMWhite(t *testing.T) {
 
