@@ -530,7 +530,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			score = zg.qsearch(pos) // zg.pieceScoring(pos.Board())
 		}
 
-		if pos.Turn() == chess.White {
+		if pos.Turn() == chess.Black {
 			score = score * -1
 		}
 
@@ -697,7 +697,10 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 			break
 		}
 
-		if res.score > alpha && res.score < beta {
+		if res.score == checkmate {
+			alpha = minEval
+			beta = maxEval
+		} else if res.score > alpha && res.score < beta {
 			alpha = res.score - 500
 			beta = res.score + 500
 
