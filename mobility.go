@@ -82,12 +82,13 @@ func getBishopMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares u
 	return mobility
 }
 
-func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uint64) int {
+func getRookMobilitySquares(pieces []uint64, colorRooks uint64, colorSquares uint64, oppSquares uint64) (int, bool) {
 
 	mobility := 0
+	connected := false
 
 	if len(pieces) == 0 {
-		return mobility
+		return mobility, false
 	}
 
 	for _, p := range pieces {
@@ -101,6 +102,11 @@ func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uin
 				break
 			}
 			if getRank(newp) != rank {
+				break
+			}
+			//Chech for connected rooks
+			if newp&colorRooks != 0 {
+				connected = true
 				break
 			}
 			if newp&colorSquares != 0 {
@@ -122,6 +128,13 @@ func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uin
 			if getRank(newp) != rank {
 				break
 			}
+
+			//Chech for connected rooks
+			if newp&colorRooks != 0 {
+				connected = true
+				break
+			}
+
 			if newp&colorSquares != 0 {
 				break
 			}
@@ -138,6 +151,12 @@ func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uin
 				break
 			}
 			if getFile(newp) != file {
+				break
+			}
+
+			//Chech for connected rooks
+			if newp&colorRooks != 0 {
+				connected = true
 				break
 			}
 			if newp&colorSquares != 0 {
@@ -158,6 +177,11 @@ func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uin
 			if getFile(newp) != file {
 				break
 			}
+			//Chech for connected rooks
+			if newp&colorRooks != 0 {
+				connected = true
+				break
+			}
 			if newp&colorSquares != 0 {
 				break
 			}
@@ -169,7 +193,7 @@ func getRookMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uin
 		}
 	}
 
-	return mobility
+	return mobility, connected
 }
 
 func getKnightMobilitySquares(pieces []uint64, colorSquares uint64) int {
@@ -252,7 +276,7 @@ func getKnightMobilitySquares(pieces []uint64, colorSquares uint64) int {
 func getQueenMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares uint64) int {
 
 	mobilityBishop := getBishopMobilitySquares(pieces, colorSquares, oppSquares)
-	mobilityRook := getRookMobilitySquares(pieces, colorSquares, oppSquares)
+	mobilityRook, _ := getRookMobilitySquares(pieces, 0, colorSquares, oppSquares)
 
 	mobility := mobilityBishop + mobilityRook
 
