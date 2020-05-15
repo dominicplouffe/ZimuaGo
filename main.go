@@ -194,7 +194,7 @@ func xBoard() {
 			// zg.timeControl.timePerMove = float64(moveTime)
 			// response(fmt.Sprintf("# %v\n", moveTime))
 		} else if cmd == "force" {
-			isForceGame = true
+			// isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
