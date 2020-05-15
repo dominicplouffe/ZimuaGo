@@ -469,23 +469,25 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 		zg.gamestage = 2
 	}
 
-	// wnmob, _ := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
+	wnmob := getKnightMobilitySquares(wnsqs, allWhiteBBs)
 	wrmob, wrcon := getRookMobilitySquares(wrsqs, bbWhiteRook, allWhiteBBs, allBlackBBs)
-	_ = wrmob
-	// wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
-	// wqmob := getQueenMobilitySquares(wqsqs, allWhiteBBs, allBlackBBs)
+	wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
+	wqmob := getQueenMobilitySquares(wqsqs, allWhiteBBs, allBlackBBs)
 
-	// bnmob, _ := getKnightMobilitySquares(bbBlackKnight, allBlackBBs)
+	bnmob := getKnightMobilitySquares(bnsqs, allBlackBBs)
 	brmob, brcon := getRookMobilitySquares(brsqs, bbBlackRook, allBlackBBs, allWhiteBBs)
-	_ = brmob
-	// bbmob, _ := getBishopMobilitySquares(bbBlackBishop, allBlackBBs, allWhiteBBs)
-	// bqmob, _ := getQueenMobilitySquares(bbBlackQueen, allBlackBBs, allWhiteBBs)
-
-	// _ = ((wnmob + wrmob + wbmob + wqmob) * 1)
-	// _ = ((bnmob + brmob + bbmob + bqmob) * 1)
+	bbmob := getBishopMobilitySquares(bbsqs, allBlackBBs, allWhiteBBs)
+	bqmob := getQueenMobilitySquares(bqsqs, allBlackBBs, allWhiteBBs)
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
+
+	queenMobility := 0
+	if zg.timeControl.moveCount > 10 {
+		queenMobility = 4
+	}
+	scoreWhite += ((wnmob * 3) + (wrmob * 4) + (wbmob * 2) + (wqmob * queenMobility))
+	scoreBlack += ((bnmob * 3) + (brmob * 4) + (bbmob * 2) + (bqmob * queenMobility))
 
 	if wrcon {
 		scoreWhite += connectedRooksBonus
