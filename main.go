@@ -242,26 +242,34 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	zg.moveCount++
 	log.Println("finished")
 
-	score := zg.pieceScoring(game.Position())
-	if game.Position().Turn() == chess.White {
-		if score > 1000 {
-			response("resign\n")
-		}
-	} else {
-		if score < -1000 {
-			response("resign\n")
-		}
-	}
-
+	resultDone := false
 	if game.Position().Status() == chess.Checkmate {
 		response("#checkmate\n")
+		resultDone = true
 	} else if game.Position().Status() == chess.Stalemate {
 		response("#stalemate\n")
+		resultDone = true
 	} else if game.Position().Status() == chess.FivefoldRepetition {
 		response("#result : draw {stalemate}\n")
+		resultDone = true
 	} else if game.Position().Status() == chess.InsufficientMaterial {
 		response("#result : draw {stalemate}\n")
+		resultDone = true
 	} else if game.Position().Status() == chess.DrawOffer {
 		response("#result : draw {stalemate}\n")
+		resultDone = true
+	}
+
+	if !resultDone {
+		score := zg.pieceScoring(game.Position())
+		if game.Position().Turn() == chess.White {
+			if score > 1000 {
+				response("resign\n")
+			}
+		} else {
+			if score < -1000 {
+				response("resign\n")
+			}
+		}
 	}
 }
