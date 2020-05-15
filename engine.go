@@ -530,7 +530,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			score = zg.qsearch(pos) // zg.pieceScoring(pos.Board())
 		}
 
-		if pos.Turn() == chess.Black {
+		if pos.Turn() == chess.White {
 			score = score * -1
 		}
 
@@ -573,15 +573,6 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	// }
 
 	for _, mv := range legalMoves {
-
-		if depth == 5 {
-			a := 0
-			_ = a
-		}
-		if depth == 3 && mv.move.S1().String() == "c3" && mv.move.S2().String() == "a3" {
-			b := 0
-			_ = b
-		}
 		// fmt.Println(depth, mv.move.S1(), mv.move.S2())
 		moveCount++
 		zg.moveSearched++
@@ -604,28 +595,21 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 		newPos := pos.Update(&mv.move)
 
+		score := 0
 		newSiblings := make([]MoveScore, newDepth)
-		res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
-		score := -res.score
-		// fmt.Println("score", depth, score, alpha, score > alpha, pos.Turn())
-		if score > alpha && isLMR { //
-			// fmt.Println("bbb")
-			newSiblings = make([]MoveScore, depth-1)
-			res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
-			score = -res.score
-		}
+		if newPos.Status() == chess.Checkmate {
+			score = checkmate
+		} else {
 
-		if depth == 5 {
-			a := 0
-			_ = a
-		}
-		if depth == 4 {
-			a := 0
-			_ = a
-		}
-		if depth == 3 && mv.move.S1().String() == "c3" && mv.move.S2().String() == "a3" {
-			b := 0
-			_ = b
+			res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+			score = -res.score
+			// fmt.Println("score", depth, score, alpha, score > alpha, pos.Turn())
+			if score > alpha && isLMR { //
+				// fmt.Println("bbb")
+				newSiblings = make([]MoveScore, depth-1)
+				res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+				score = -res.score
+			}
 		}
 
 		if score == stalemate || score == -stalemate {

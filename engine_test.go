@@ -30,8 +30,6 @@ func TestPieceInFull(t *testing.T) {
 
 	score := zg.pieceScoring(game.Position())
 
-	fmt.Println(chess.B1)
-
 	if score != 0 {
 		t.Error("Piece scoring should be 0", score)
 	}
@@ -45,8 +43,6 @@ func TestPieceScoring(t *testing.T) {
 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	score := zg.pieceScoring(game.Position())
-
-	fmt.Println(chess.B1)
 
 	if score != 191 {
 		t.Error("Piece scoring should be 199", score)
@@ -92,36 +88,50 @@ func TestPieceInCheckmateAlphaBeta(t *testing.T) {
 	}
 }
 
-// // func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
+func TestPieceInCheckmateAnotherQsearch(t *testing.T) {
 
-// // 	zg := Zimua("White", 5.0)
+	zg := Zimua("White", 5.0)
 
-// // 	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
-// // 	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
-// // 	ply := 6
+	fen, _ := chess.FEN("8/2R5/1k6/1pNP4/1P6/P4P2/8/1K6 w - - 3 73")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
-// // 	siblings := make([]MoveScore, ply)
-// // 	res := zg.alphaBetaNM(
-// // 		game.Position(),
-// // 		ply,
-// // 		-zg.minValue,
-// // 		-zg.maxValue,
-// // 		ply,
-// // 		false,
-// // 		false,
-// // 		siblings,
-// // 	)
+	_, move := zg.search(game, false)
 
-// // 	smoves := ""
-// // 	for i := len(siblings) - 1; i >= 0; i-- {
-// // 		smoves += siblings[i].move.String() + " "
-// // 	}
-// // 	fmt.Println(smoves)
+	if move.S1() != chess.C7 || move.S2() != chess.B7 {
+		t.Error("Move Square should be C7 to B7")
+	}
+}
 
-// // 	if res.score != 99999998 {
-// // 		t.Error("Piece scoring should be 99999998", res.score)
-// // 	}
-// // }
+func TestPieceInCheckmateAlphaBetaNextMoveCMBlack(t *testing.T) {
+
+	zg := Zimua("White", 5.0)
+
+	fen, _ := chess.FEN("r3kb1r/1p3ppp/pn6/2p5/2bP1Q2/1B6/PP1PqPPP/R1B3KR b - - 1 2")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+	ply := 1
+
+	siblings := make([]MoveScore, ply)
+	res := zg.alphaBetaNM(
+		game.Position(),
+		ply,
+		zg.minValue,
+		zg.maxValue,
+		ply,
+		false,
+		false,
+		siblings,
+	)
+
+	// smoves := ""
+	// for i := len(siblings) - 1; i >= 0; i-- {
+	// 	smoves += siblings[i].move.String() + " "
+	// }
+	// fmt.Println(smoves)
+
+	if res.score != 99999999 {
+		t.Error("Piece scoring should be 99999999", res.score)
+	}
+}
 
 func TestPieceInCheckmateAlphaBetaNextMoveCMWhite(t *testing.T) {
 
@@ -175,11 +185,11 @@ func TestPieceInCheckmateAlphaBetaNextMoveCMWhite2(t *testing.T) {
 		siblings,
 	)
 
-	// smoves := ""
-	// for i := len(siblings) - 1; i >= 0; i-- {
-	// 	smoves += siblings[i].move.String() + " "
-	// }
-	// fmt.Println(smoves)
+	smoves := ""
+	for i := len(siblings) - 1; i >= 0; i-- {
+		smoves += siblings[i].move.String() + " "
+	}
+	fmt.Println(smoves)
 
 	if res.score != 99999999 {
 		t.Error("Piece scoring should be 99999999", res.score)
