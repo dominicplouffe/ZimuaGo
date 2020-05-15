@@ -44,8 +44,8 @@ func TestPieceScoring(t *testing.T) {
 
 	score := zg.pieceScoring(game.Position())
 
-	if score != 191 {
-		t.Error("Piece scoring should be 199", score)
+	if score != 190 {
+		t.Error("Piece scoring should be 190", score)
 	}
 }
 
