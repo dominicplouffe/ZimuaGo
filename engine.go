@@ -12,6 +12,8 @@ import (
 
 var checkmate = 99999999
 var stalemate = 88888888
+var doubleBishopBonus = 75
+var connectedRooksBonus = 25
 
 // MoveScore is used to store the moves importance when generating the list of moves
 type MoveScore struct {
@@ -342,8 +344,8 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	var bbBlackBishop uint64 = bitboards[9]
 	var bbBlackKnight uint64 = bitboards[10]
 	var bbBlackPawn uint64 = bitboards[11]
-	// var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
-	// var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+	var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
 
 	// _ = allWhiteBBs
 	// _ = allBlackBBs
@@ -468,12 +470,14 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	}
 
 	// wnmob, _ := getKnightMobilitySquares(bbWhiteKnight, allWhiteBBs)
-	// wrmob := getRookMobilitySquares(wrsqs, allWhiteBBs, allBlackBBs)
+	wrmob, wrcon := getRookMobilitySquares(wrsqs, bbWhiteRook, allWhiteBBs, allBlackBBs)
+	_ = wrmob
 	// wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
 	// wqmob := getQueenMobilitySquares(wqsqs, allWhiteBBs, allBlackBBs)
 
 	// bnmob, _ := getKnightMobilitySquares(bbBlackKnight, allBlackBBs)
-	// brmob, _ := getRookMobilitySquares(bbBlackRook, allBlackBBs, allWhiteBBs)
+	brmob, brcon := getRookMobilitySquares(brsqs, bbBlackRook, allBlackBBs, allWhiteBBs)
+	_ = brmob
 	// bbmob, _ := getBishopMobilitySquares(bbBlackBishop, allBlackBBs, allWhiteBBs)
 	// bqmob, _ := getQueenMobilitySquares(bbBlackQueen, allBlackBBs, allWhiteBBs)
 
@@ -483,15 +487,19 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
 
-	// fmt.Println(wqmob)
-	// fmt.Println(wqsqs)
+	if wrcon {
+		scoreWhite += connectedRooksBonus
+	}
+	if brcon {
+		scoreBlack += connectedRooksBonus
+	}
 
 	// Double Bishop Bonus
 	if bishopWhite == 2 {
-		scoreWhite += 75
+		scoreWhite += doubleBishopBonus
 	}
 	if bishopBlack == 2 {
-		scoreBlack += 75
+		scoreBlack += doubleBishopBonus
 	}
 
 	return scoreWhite - scoreBlack
