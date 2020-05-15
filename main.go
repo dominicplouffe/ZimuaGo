@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2 open"
+var name = "Zimua v2 smallchg"
 
 func main() {
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua_open.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_smallchg.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -142,7 +142,7 @@ func xBoard() {
 
 		if cmd == "xboard" {
 
-			response("tellics say     %%s Zimua Engine\n")
+			response(fmt.Sprintf("tellics say     %s\n", name))
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
 		} else if cmd == "new" || cmd == "post" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
