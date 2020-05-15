@@ -50,6 +50,7 @@ type ZimuaGame struct {
 	maxValue       int
 	name           string
 	gamestage      int
+	hashTable      map[[16]byte]int
 }
 
 //Zimua creates an instance of the Zimua chess engine
@@ -68,6 +69,7 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 		name:           name,
 		moveCount:      0,
 		gamestage:      0,
+		hashTable:      make(map[[16]byte]int),
 	}
 	zg.initGame()
 
@@ -575,6 +577,8 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			newSiblings := make([]MoveScore, depth-3)
 			nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, startDepth, false, true, newSiblings)
 
+			zg.hashTable[newPos.Hash()] = -nmRes.score
+
 			if -nmRes.score >= beta {
 				nmRes.score = nmRes.score * -1
 				return nmRes
@@ -609,16 +613,19 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		newSiblings := make([]MoveScore, newDepth)
 		if newPos.Status() == chess.Checkmate {
 			score = checkmate
+			zg.hashTable[newPos.Hash()] = score
 		} else {
 
 			res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 			score = -res.score
+			zg.hashTable[newPos.Hash()] = score
 			// fmt.Println("score", depth, score, alpha, score > alpha, pos.Turn())
 			if score > alpha && isLMR { //
 				// fmt.Println("bbb")
 				newSiblings = make([]MoveScore, depth-1)
 				res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 				score = -res.score
+				zg.hashTable[newPos.Hash()] = score
 			}
 		}
 
