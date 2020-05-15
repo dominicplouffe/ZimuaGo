@@ -558,19 +558,19 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 	allowLMR := depth >= 3 && !inCheck
 
-	// if !inCheck && depth >= 3 && depth != startDepth && !isNull {
-	// 	newPos := pos.NullMove()
-	// 	status := newPos.Status()
-	// 	if status != chess.Stalemate && status != chess.FivefoldRepetition {
-	// 		newSiblings := make([]MoveScore, depth-3)
-	// 		nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, startDepth, false, true, newSiblings)
+	if !inCheck && depth >= 3 && depth != startDepth && !isNull {
+		newPos := pos.NullMove()
+		status := newPos.Status()
+		if status != chess.Stalemate && status != chess.FivefoldRepetition {
+			newSiblings := make([]MoveScore, depth-3)
+			nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, startDepth, false, true, newSiblings)
 
-	// 		if -nmRes.score >= beta {
-	// 			nmRes.score = nmRes.score * -1
-	// 			return nmRes
-	// 		}
-	// 	}
-	// }
+			if -nmRes.score >= beta {
+				nmRes.score = nmRes.score * -1
+				return nmRes
+			}
+		}
+	}
 
 	for _, mv := range legalMoves {
 		// fmt.Println(depth, mv.move.S1(), mv.move.S2())
