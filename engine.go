@@ -50,7 +50,7 @@ type ZimuaGame struct {
 	maxValue       int
 	name           string
 	gamestage      int
-	hashTable      map[[16]byte]int
+	hashTable      map[[16]byte]ZimuaHash
 }
 
 //Zimua creates an instance of the Zimua chess engine
@@ -69,7 +69,7 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 		name:           name,
 		moveCount:      0,
 		gamestage:      0,
-		hashTable:      make(map[[16]byte]int),
+		hashTable:      make(map[[16]byte]ZimuaHash),
 	}
 	zg.initGame()
 
@@ -485,9 +485,9 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	scoreBlack := pieceScoreBlack + piecePosBlack
 
 	queenMobility := 0
-	if zg.timeControl.moveCount > 10 {
-		queenMobility = 4
-	}
+	// if zg.timeControl.moveCount > 10 {
+	// 	queenMobility = 4
+	// }
 	scoreWhite += ((wnmob * 3) + (wrmob * 4) + (wbmob * 2) + (wqmob * queenMobility))
 	scoreBlack += ((bnmob * 3) + (brmob * 4) + (bbmob * 2) + (bqmob * queenMobility))
 
@@ -577,7 +577,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			newSiblings := make([]MoveScore, depth-3)
 			nmRes := zg.alphaBetaNM(newPos, depth-3, -beta, -beta+1, startDepth, false, true, newSiblings)
 
-			zg.hashTable[newPos.Hash()] = -nmRes.score
+			// zg.hashTable[newPos.Hash()] = -nmRes.score
 
 			if -nmRes.score >= beta {
 				nmRes.score = nmRes.score * -1
@@ -613,20 +613,33 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		newSiblings := make([]MoveScore, newDepth)
 		if newPos.Status() == chess.Checkmate {
 			score = checkmate
-			zg.hashTable[newPos.Hash()] = score
+			zg.store(*newPos, alpha, beta, score, mv.move, depth)
 		} else {
 
-			res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
-			score = -res.score
-			zg.hashTable[newPos.Hash()] = score
-			// fmt.Println("score", depth, score, alpha, score > alpha, pos.Turn())
-			if score > alpha && isLMR { //
-				// fmt.Println("bbb")
-				newSiblings = make([]MoveScore, depth-1)
-				res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+			zh, _ := zg.lookup(*newPos, alpha, beta, depth, legalMoves)
+			if zh != nil {
+				score = zh.score
+			} else {
+
+				res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 				score = -res.score
-				zg.hashTable[newPos.Hash()] = score
+				zg.store(*newPos, alpha, beta, score, mv.move, depth)
+				if score > alpha && isLMR { //
+					newSiblings = make([]MoveScore, depth-1)
+					res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+					score = -res.score
+					zg.store(*newPos, alpha, beta, score, mv.move, depth)
+				}
 			}
+
+			// if zh != nil && score != zh.score {
+			// 	log.Println(score, zh.score)
+			// 	log.Println("alpha", alpha, zh.alpha)
+			// 	log.Println("beta", beta, zh.beta)
+			// 	log.Println(newPos.String())
+			// 	log.Println(zh.pos.String())
+			// 	log.Println("")
+			// }
 		}
 
 		if score == stalemate || score == -stalemate {

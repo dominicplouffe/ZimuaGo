@@ -44,7 +44,7 @@ func main() {
 		computerVSHuman()
 	} else {
 		// fmt.Println("Usage: ./engine.go [-uci|-cpu|-human] [-profile]")
-		xBoard()
+		computerVSHuman()
 	}
 
 }
