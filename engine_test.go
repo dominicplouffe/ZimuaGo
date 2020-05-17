@@ -7,6 +7,101 @@ import (
 	"github.com/dominicplouffe/chess"
 )
 
+func TestKingMobility(t *testing.T) {
+
+	initSquareIndexes()
+
+	// zg := Zimua("White", 5.0)
+
+	fen, _ := chess.FEN("k7/8/8/2PPP3/2NKN3/2RQR3/8/8 w - - 0 1")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	b := game.Position().Board()
+
+	var bitboards []uint64 = b.Bitboards()
+	var bbWhiteKing uint64 = bitboards[0]
+	var bbWhiteQueen uint64 = bitboards[1]
+	var bbWhiteRook uint64 = bitboards[2]
+	var bbWhiteBishop uint64 = bitboards[3]
+	var bbWhiteKnight uint64 = bitboards[4]
+	var bbWhitePawn uint64 = bitboards[5]
+	var bbBlackKing uint64 = bitboards[6]
+	var bbBlackQueen uint64 = bitboards[7]
+	var bbBlackRook uint64 = bitboards[8]
+	var bbBlackBishop uint64 = bitboards[9]
+	var bbBlackKnight uint64 = bitboards[10]
+	var bbBlackPawn uint64 = bitboards[11]
+	var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+
+	_ = allWhiteBBs
+	_ = allBlackBBs
+
+	mob := getKingMobility(bbWhiteKing, allWhiteBBs)
+	if mob != 8 {
+		t.Error("King mobility should be 8", mob)
+	}
+
+	fen, _ = chess.FEN("k7/8/8/2PPP3/3K4/8/8/8 w - - 0 1")
+	game = chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	b = game.Position().Board()
+
+	bitboards = b.Bitboards()
+	bbWhiteKing = bitboards[0]
+	bbWhiteQueen = bitboards[1]
+	bbWhiteRook = bitboards[2]
+	bbWhiteBishop = bitboards[3]
+	bbWhiteKnight = bitboards[4]
+	bbWhitePawn = bitboards[5]
+	bbBlackKing = bitboards[6]
+	bbBlackQueen = bitboards[7]
+	bbBlackRook = bitboards[8]
+	bbBlackBishop = bitboards[9]
+	bbBlackKnight = bitboards[10]
+	bbBlackPawn = bitboards[11]
+	allWhiteBBs = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	allBlackBBs = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+
+	_ = allWhiteBBs
+	_ = allBlackBBs
+
+	mob = getKingMobility(bbWhiteKing, allWhiteBBs)
+	if mob != 3 {
+		t.Error("King mobility should be 3", mob)
+	}
+
+	// Test 3
+	fen, _ = chess.FEN("k7/8/8/8/8/8/8/7K w - - 0 1")
+	game = chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	b = game.Position().Board()
+
+	bitboards = b.Bitboards()
+	bbWhiteKing = bitboards[0]
+	bbWhiteQueen = bitboards[1]
+	bbWhiteRook = bitboards[2]
+	bbWhiteBishop = bitboards[3]
+	bbWhiteKnight = bitboards[4]
+	bbWhitePawn = bitboards[5]
+	bbBlackKing = bitboards[6]
+	bbBlackQueen = bitboards[7]
+	bbBlackRook = bitboards[8]
+	bbBlackBishop = bitboards[9]
+	bbBlackKnight = bitboards[10]
+	bbBlackPawn = bitboards[11]
+	allWhiteBBs = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	allBlackBBs = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+
+	_ = allWhiteBBs
+	_ = allBlackBBs
+
+	mob = getKingMobility(bbWhiteKing, allWhiteBBs)
+	if mob != 5 {
+		t.Error("King mobility should be 5", mob)
+	}
+}
+
 func TestPieceInCheckmate(t *testing.T) {
 
 	zg := Zimua("White", 5.0)

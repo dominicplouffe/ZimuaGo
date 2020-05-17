@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2 mobility"
+var name = "Zimua v2 kingmob"
 
 func main() {
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua_mob.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_kingmob.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}

@@ -12,7 +12,7 @@ import (
 
 var checkmate = 99999999
 var stalemate = 88888888
-var doubleBishopBonus = 75
+var doubleBishopBonus = 15
 var connectedRooksBonus = 25
 
 // MoveScore is used to store the moves importance when generating the list of moves
@@ -473,11 +473,13 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	wrmob, wrcon := getRookMobilitySquares(wrsqs, bbWhiteRook, allWhiteBBs, allBlackBBs)
 	wbmob := getBishopMobilitySquares(wbsqs, allWhiteBBs, allBlackBBs)
 	wqmob := getQueenMobilitySquares(wqsqs, allWhiteBBs, allBlackBBs)
+	wkmob := getKingMobility(bbWhiteKing, allWhiteBBs)
 
 	bnmob := getKnightMobilitySquares(bnsqs, allBlackBBs)
 	brmob, brcon := getRookMobilitySquares(brsqs, bbBlackRook, allBlackBBs, allWhiteBBs)
 	bbmob := getBishopMobilitySquares(bbsqs, allBlackBBs, allWhiteBBs)
 	bqmob := getQueenMobilitySquares(bqsqs, allBlackBBs, allWhiteBBs)
+	bkmob := getKingMobility(bbBlackKing, allBlackBBs)
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
@@ -488,6 +490,9 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	}
 	scoreWhite += ((wnmob * 3) + (wrmob * 4) + (wbmob * 2) + (wqmob * queenMobility))
 	scoreBlack += ((bnmob * 3) + (brmob * 4) + (bbmob * 2) + (bqmob * queenMobility))
+
+	scoreWhite += wkmob * 5
+	scoreBlack += bkmob * 5
 
 	if wrcon {
 		scoreWhite += connectedRooksBonus

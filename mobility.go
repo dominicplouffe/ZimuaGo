@@ -282,3 +282,58 @@ func getQueenMobilitySquares(pieces []uint64, colorSquares uint64, oppSquares ui
 
 	return mobility
 }
+
+func getKingMobility(piece uint64, colorSquares uint64) int {
+	// +9, +8, +7
+	// -1      +1
+	// -7 -8   -9
+
+	mob := 0
+	newp := piece >> 9
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece >> 8
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece >> 7
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece >> 1
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece << 1
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece << 7
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece << 8
+	if newp&colorSquares > 0 {
+		mob++
+	}
+	newp = piece << 9
+	if newp&colorSquares > 0 {
+		mob++
+	}
+
+	if getRank(piece) == bbRANK1 || getRank(piece) == bbRANK8 {
+		mob += 3
+	}
+	if getFile(piece) == bbFILEA || getFile(piece) == bbFILEH {
+		mob += 3
+	}
+
+	pieceIdx := squareIndexes[piece]
+	if pieceIdx == 0 || pieceIdx == 7 || pieceIdx == 56 || pieceIdx == 53 {
+		mob--
+	}
+
+	return mob
+
+}
