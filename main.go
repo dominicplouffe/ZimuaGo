@@ -272,8 +272,8 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 			}
 		}
 
-		if zg.timeControl.timePerMove < 0 {
-			response("resign\n")
-		}
+		// if zg.timeControl.timePerMove < 0 {
+		// 	response("resign\n")
+		// }
 	}
 }
