@@ -126,7 +126,7 @@ func computerVSComputer() {
 func xBoard() {
 
 	isForceGame := false
-	maxTime := 5
+	maxTime := 2
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
