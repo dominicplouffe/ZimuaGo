@@ -21,6 +21,19 @@ func TestPieceInCheckmate(t *testing.T) {
 	}
 }
 
+func TestPawnScore(t *testing.T) {
+
+	zg := Zimua("White", 5.0)
+
+	fen, _ := chess.FEN("8/PPPPPPPP/8/8/8/8/8/K6k w - - 0 1")
+	game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
+
+	score := zg.pieceScoring(game.Position())
+	if score != 99999999 {
+		t.Error("Piece scoring should be 99999999", score)
+	}
+}
+
 func TestPieceInFull(t *testing.T) {
 
 	zg := Zimua("White", 5.0)

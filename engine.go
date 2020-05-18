@@ -50,6 +50,7 @@ type ZimuaGame struct {
 	maxValue       int
 	name           string
 	gamestage      int
+	positions      []*chess.Position
 }
 
 //Zimua creates an instance of the Zimua chess engine
@@ -103,8 +104,8 @@ func getTimeControl(totalTime float64) TimeControl {
 func (zg ZimuaGame) initGame() {
 	zg.posPointsWhite[0] = append(zg.posPointsWhite[0],
 		900, 900, 900, 900, 900, 900, 900, 900,
-		78, 83, 86, 73, 102, 82, 85, 90,
-		20, 29, 21, 44, 40, 31, 44, 20,
+		90, 90, 90, 90, 90, 90, 90, 90,
+		90, 90, 90, 90, 90, 90, 90, 90,
 		20, 16, -2, 15, 14, 0, 15, 20,
 		10, 3, 10, 20, 20, 1, 0, 10,
 		10, 9, 5, 10, 10, -2, 3, 10,
@@ -168,8 +169,8 @@ func (zg ZimuaGame) initGame() {
 		10, 9, 5, 10, 10, -2, 3, 10,
 		10, 3, 10, 20, 20, 1, 0, 10,
 		20, 16, -2, 15, 14, 0, 15, 20,
-		20, 29, 21, 44, 40, 31, 44, 20,
-		78, 83, 86, 73, 102, 82, 85, 90,
+		90, 90, 90, 90, 90, 90, 90, 90,
+		90, 90, 90, 90, 90, 90, 90, 90,
 		900, 900, 900, 900, 900, 900, 900, 900,
 	)
 
@@ -242,6 +243,22 @@ func (zg *ZimuaGame) createMoveScore(move chess.Move, score int, killer bool) Mo
 		capture:   false,
 		promotion: false,
 	}
+}
+
+func (zg *ZimuaGame) getRepetitionCount(current *chess.Position) int {
+	count := 0
+	for _, pos := range zg.positions {
+		if zg.samePosition(current, pos) {
+			count++
+		}
+	}
+	return count
+}
+
+func (zg *ZimuaGame) samePosition(pos *chess.Position, pos2 *chess.Position) bool {
+	return pos.Board().String() == pos2.Board().String() &&
+		pos.Turn() == pos2.Turn() &&
+		pos.CastleRights().String() == pos2.CastleRights().String()
 }
 
 func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
@@ -607,8 +624,11 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 		score := 0
 		newSiblings := make([]MoveScore, newDepth)
+
 		if newPos.Status() == chess.Checkmate {
 			score = checkmate
+		} else if depth == startDepth && zg.getRepetitionCount(newPos) >= 3 {
+			score = -checkmate
 		} else {
 
 			res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
@@ -691,6 +711,9 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 	response("# 16+16 pieces, centr = (1,1) R=40\n")
 
 	log.Println("start loop")
+
+	zg.positions = g.Positions()
+
 	for ply < maxPly {
 		start := time.Now()
 		zg.moveSearched = 0
