@@ -278,9 +278,8 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 
 		score := 0
 
-		// newPos := pos.Update(mv)
-		// thash := zg.transposiiton[depth][newPos.Hash()]
-		thash := 0
+		newPos := pos.Update(mv)
+		thash := zg.transposiiton[depth][newPos.Hash()]
 
 		if thash != 0 {
 			score += 1000
@@ -293,7 +292,7 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		kindSideCastle := mv.HasTag(chess.KingSideCastle)
 		queenSideCastle := mv.HasTag(chess.QueenSideCastle)
 		toCheck := mv.HasTag(chess.Check)
-		pieceColor := pieceFrom.Color()
+		// pieceColor := pieceFrom.Color()
 
 		if toCheck {
 			score += 800
@@ -313,53 +312,53 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 			score += 0
 		}
 
-		// if pieceType == chess.King {
-		// 	score -= 10
-		// } else if pieceType == chess.Bishop || pieceType == chess.Knight {
-		// 	score += 9
-		// } else if pieceType == chess.Rook {
-		// 	score += 7
-		// } else if pieceType == chess.Queen {
-		// 	score += 8
-		// }
-		// if pieceTo != chess.King {
-		// 	pieceIdx := 0
-		// 	if pieceTo == chess.Knight {
-		// 		pieceIdx = 1
-		// 	} else if pieceTo == chess.Bishop {
-		// 		pieceIdx = 2
-		// 	} else if pieceTo == chess.Rook {
-		// 		pieceIdx = 3
-		// 	} else if pieceTo == chess.Queen {
-		// 		pieceIdx = 4
-		// 	} else if pieceTo == chess.King {
-		// 		pieceIdx = 5
-		// 	}
-		// 	score += zg.piecePoints[pieceIdx]
-		// }
-
-		f := mv.S2().File()
-		r := mv.S2().Rank()
-		idx := (int(r) * 8) + int(f)
-
-		pieceTypeIdx := 0
-		if pieceType == chess.Knight {
-			pieceTypeIdx = 1
-		} else if pieceType == chess.Bishop {
-			pieceTypeIdx = 2
+		if pieceType == chess.King {
+			score -= 10
+		} else if pieceType == chess.Bishop || pieceType == chess.Knight {
+			score += 9
 		} else if pieceType == chess.Rook {
-			pieceTypeIdx = 3
+			score += 7
 		} else if pieceType == chess.Queen {
-			pieceTypeIdx = 4
-		} else if pieceType == chess.King {
-			pieceTypeIdx = 5
+			score += 8
+		}
+		if pieceTo != chess.King {
+			pieceIdx := 0
+			if pieceTo == chess.Knight {
+				pieceIdx = 1
+			} else if pieceTo == chess.Bishop {
+				pieceIdx = 2
+			} else if pieceTo == chess.Rook {
+				pieceIdx = 3
+			} else if pieceTo == chess.Queen {
+				pieceIdx = 4
+			} else if pieceTo == chess.King {
+				pieceIdx = 5
+			}
+			score += zg.piecePoints[pieceIdx]
 		}
 
-		if pieceColor == chess.White {
-			score += zg.posPointsWhite[pieceTypeIdx][idx]
-		} else {
-			score += zg.posPointsBlack[pieceTypeIdx][idx]
-		}
+		// f := mv.S2().File()
+		// r := mv.S2().Rank()
+		// idx := (int(r) * 8) + int(f)
+
+		// pieceTypeIdx := 0
+		// if pieceType == chess.Knight {
+		// 	pieceTypeIdx = 1
+		// } else if pieceType == chess.Bishop {
+		// 	pieceTypeIdx = 2
+		// } else if pieceType == chess.Rook {
+		// 	pieceTypeIdx = 3
+		// } else if pieceType == chess.Queen {
+		// 	pieceTypeIdx = 4
+		// } else if pieceType == chess.King {
+		// 	pieceTypeIdx = 5
+		// }
+
+		// if pieceColor == chess.White {
+		// 	score += zg.posPointsWhite[pieceTypeIdx][idx]
+		// } else {
+		// 	score += zg.posPointsBlack[pieceTypeIdx][idx]
+		// }
 
 		ms := zg.createMoveScore(*mv, score, false)
 		ms.capture = isCapture
