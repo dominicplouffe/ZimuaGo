@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2 mobility"
+var name = "Zimua v2.3 mobility"
 
 func main() {
 
@@ -57,11 +57,11 @@ func response(value string) {
 
 func computerVSHuman() {
 
-	// fen, _ := chess.FEN("3R4/1r3ppk/7p/p7/1B6/2P5/P1b2PPP/6K1 w - - 0 1")
+	// fen, _ := chess.FEN("4k2B/5p2/1NnRp3/p5pp/8/5N2/PPP3PP/2K4n w - - 0 21")
 	// game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
-	zg := Zimua("White", 15.0)
+	zg := Zimua("White", 30.0)
 
 	reader := bufio.NewReader(os.Stdin)
 
@@ -125,7 +125,7 @@ func computerVSComputer() {
 
 func xBoard() {
 
-	isForceGame := false
+	// isForceGame := false
 	maxTime := 2
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -194,7 +194,7 @@ func xBoard() {
 			// zg.timeControl.timePerMove = float64(moveTime)
 			// response(fmt.Sprintf("# %v\n", moveTime))
 		} else if cmd == "force" {
-			isForceGame = true
+			// isForceGame = true
 		} else if strings.HasPrefix(cmd, "level") {
 			maxTime, _ = strconv.Atoi(strings.Split(cmd, " ")[2])
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
@@ -205,6 +205,7 @@ func xBoard() {
 			if matched {
 				foundMove := false
 				for _, move := range game.ValidMoves() {
+					log.Println(move, cmd, move.String() == cmd)
 					if move.String() == cmd {
 						game.Move(move)
 						zg.inCheck = move.HasTag(chess.Check)
@@ -220,7 +221,8 @@ func xBoard() {
 
 				if game.Outcome() != chess.NoOutcome {
 					response("#game_over\n")
-				} else if !isForceGame {
+					// } else if !isForceGame {
+				} else {
 					xBoardPlay(game, &zg)
 				}
 			} else {

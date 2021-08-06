@@ -10,6 +10,13 @@ import (
 	"github.com/dominicplouffe/chess"
 )
 
+func Abs(x int) int {
+	if x < 0 {
+		return -x
+	}
+	return x
+}
+
 var checkmate = 99999999
 var stalemate = 88888888
 var doubleBishopBonus = 75
@@ -50,6 +57,8 @@ type ZimuaGame struct {
 	maxValue       int
 	name           string
 	gamestage      int
+	transposiiton  map[int]map[[16]byte]int
+	killer         map[[16]byte]MoveScore
 }
 
 //Zimua creates an instance of the Zimua chess engine
@@ -68,6 +77,8 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 		name:           name,
 		moveCount:      0,
 		gamestage:      0,
+		transposiiton:  make(map[int]map[[16]byte]int),
+		killer:         make(map[[16]byte]MoveScore),
 	}
 	zg.initGame()
 
@@ -248,6 +259,14 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 
 	var moves []MoveScore
 
+	killer_move := zg.killer[pos.Hash()]
+
+	if killer_move.score > 0 {
+		killer_move.killer = true
+		killer_move.score = 900
+		moves = append(moves, killer_move)
+	}
+
 	validMoves := pos.ValidMoves()
 	board := pos.Board()
 
@@ -258,47 +277,88 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		}
 
 		score := 0
+
+		// newPos := pos.Update(mv)
+		// thash := zg.transposiiton[depth][newPos.Hash()]
+		thash := 0
+
+		if thash != 0 {
+			score += 1000
+		}
+
 		pieceFrom := board.Piece(chess.Square(mv.S1()))
 		pieceTo := board.Piece(chess.Square(mv.S2())).Type()
 		pieceType := pieceFrom.Type()
 		isCapture := mv.HasTag(chess.Capture)
-		isEnPassant := mv.HasTag(chess.EnPassant)
+		kindSideCastle := mv.HasTag(chess.KingSideCastle)
+		queenSideCastle := mv.HasTag(chess.QueenSideCastle)
 		toCheck := mv.HasTag(chess.Check)
+		pieceColor := pieceFrom.Color()
 
 		if toCheck {
-			score += 1000
+			score += 800
 		}
 
 		if isCapture {
 			score += 100
 		}
-		if isEnPassant {
+		if isPromo {
 			score += 10
 		}
 
-		if pieceType == chess.King {
-			score -= 10
-		} else if pieceType == chess.Bishop || pieceType == chess.Knight {
-			score += 9
-		} else if pieceType == chess.Rook {
-			score += 7
-		} else if pieceType == chess.Queen {
-			score += 8
+		if kindSideCastle {
+			score += 0
 		}
-		if pieceTo != chess.King {
-			pieceIdx := 0
-			if pieceTo == chess.Knight {
-				pieceIdx = 1
-			} else if pieceTo == chess.Bishop {
-				pieceIdx = 2
-			} else if pieceTo == chess.Rook {
-				pieceIdx = 3
-			} else if pieceTo == chess.Queen {
-				pieceIdx = 4
-			} else if pieceTo == chess.King {
-				pieceIdx = 5
-			}
-			score += zg.piecePoints[pieceIdx]
+		if queenSideCastle {
+			score += 0
+		}
+
+		// if pieceType == chess.King {
+		// 	score -= 10
+		// } else if pieceType == chess.Bishop || pieceType == chess.Knight {
+		// 	score += 9
+		// } else if pieceType == chess.Rook {
+		// 	score += 7
+		// } else if pieceType == chess.Queen {
+		// 	score += 8
+		// }
+		// if pieceTo != chess.King {
+		// 	pieceIdx := 0
+		// 	if pieceTo == chess.Knight {
+		// 		pieceIdx = 1
+		// 	} else if pieceTo == chess.Bishop {
+		// 		pieceIdx = 2
+		// 	} else if pieceTo == chess.Rook {
+		// 		pieceIdx = 3
+		// 	} else if pieceTo == chess.Queen {
+		// 		pieceIdx = 4
+		// 	} else if pieceTo == chess.King {
+		// 		pieceIdx = 5
+		// 	}
+		// 	score += zg.piecePoints[pieceIdx]
+		// }
+
+		f := mv.S2().File()
+		r := mv.S2().Rank()
+		idx := (int(r) * 8) + int(f)
+
+		pieceTypeIdx := 0
+		if pieceType == chess.Knight {
+			pieceTypeIdx = 1
+		} else if pieceType == chess.Bishop {
+			pieceTypeIdx = 2
+		} else if pieceType == chess.Rook {
+			pieceTypeIdx = 3
+		} else if pieceType == chess.Queen {
+			pieceTypeIdx = 4
+		} else if pieceType == chess.King {
+			pieceTypeIdx = 5
+		}
+
+		if pieceColor == chess.White {
+			score += zg.posPointsWhite[pieceTypeIdx][idx]
+		} else {
+			score += zg.posPointsBlack[pieceTypeIdx][idx]
 		}
 
 		ms := zg.createMoveScore(*mv, score, false)
@@ -312,6 +372,10 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		return moves[i].score > moves[j].score
 	})
 	return moves
+}
+
+func (zg *ZimuaGame) scorePiece(p *chess.Position) int {
+	return 0
 }
 
 func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
@@ -536,6 +600,8 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 		if pos.Status() == chess.FivefoldRepetition {
 			score = stalemate
+		} else if pos.Status() == chess.ThreefoldRepetition {
+			score = stalemate
 		} else {
 			score = zg.qsearch(pos) // zg.pieceScoring(pos.Board())
 		}
@@ -583,6 +649,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	}
 
 	for _, mv := range legalMoves {
+
 		// fmt.Println(depth, mv.move.S1(), mv.move.S2())
 		moveCount++
 		zg.moveSearched++
@@ -605,20 +672,37 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 		newPos := pos.Update(&mv.move)
 
+		// fmt.Println(newPos.Hash())
+		// fmt.Println(zg.transposiiton)
+
 		score := 0
 		newSiblings := make([]MoveScore, newDepth)
 		if newPos.Status() == chess.Checkmate {
 			score = checkmate
 		} else {
 
-			res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
-			score = -res.score
+			thash := zg.transposiiton[depth][newPos.Hash()]
+			if thash == 0 {
+				// fmt.Println("a")
+				res := zg.alphaBetaNM(newPos, newDepth, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+				score = -res.score
+			} else {
+				// fmt.Println(thash)
+				score = thash
+			}
 			// fmt.Println("score", depth, score, alpha, score > alpha, pos.Turn())
 			if score > alpha && isLMR { //
 				// fmt.Println("bbb")
 				newSiblings = make([]MoveScore, depth-1)
-				res = zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
+				res := zg.alphaBetaNM(newPos, depth-1, -beta, -alpha, startDepth, mv.inCheck, false, newSiblings)
 				score = -res.score
+			}
+			posMap := map[[16]byte]int{newPos.Hash(): score}
+			zg.transposiiton[depth] = posMap
+
+			if alpha >= beta {
+				zg.killer[newPos.Hash()] = mv
+				break
 			}
 		}
 
@@ -629,11 +713,12 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		newValue := max(value, score)
 
 		// fmt.Println("***", newValue, value)
-		if newValue > value {
-			// fmt.Println("ccc", newSiblings)
+		if (newValue > value) || (mv.killer && Abs(score) > 250) {
 			value = newValue
 			bestMove.move = mv.move
 			bestMove.score = newValue
+
+			// fmt.Println("ccc", value, score, mv.move.String())
 
 			for i, s := range newSiblings {
 				if s.move.String() != "a1a1" {
@@ -651,7 +736,6 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		}
 
 	}
-
 	return bestMove
 }
 
@@ -711,8 +795,8 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 			alpha = minEval
 			beta = maxEval
 		} else if res.score > alpha && res.score < beta {
-			alpha = res.score - 500
-			beta = res.score + 500
+			alpha = res.score - 50
+			beta = res.score + 50
 
 			if alpha < minEval {
 				alpha = minEval
@@ -742,7 +826,7 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 			res.score *= -1
 		}
 
-		response(fmt.Sprintf("%3v %6v %8v %10v %v\n", ply, res.score, int(elapsed)/1000000000, zg.moveSearched, moves))
+		response(fmt.Sprintf("%3v %6v %8v %10v %v\n", ply, res.score, int(elapsed)/10000000, zg.moveSearched, moves))
 
 		totalElapsed = t.Sub(totalStart).Seconds()
 		zg.timeControl.totalNodes += zg.moveSearched

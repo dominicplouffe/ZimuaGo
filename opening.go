@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/csv"
-	"fmt"
 	"log"
 	"math/rand"
 	"regexp"
@@ -102,7 +101,6 @@ func findMove(moves []string) (string, bool) {
 }
 
 func init() {
-	fmt.Println("init opening")
 	openings = buildOpenings()
 
 }
