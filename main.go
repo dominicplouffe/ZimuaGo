@@ -144,7 +144,7 @@ func xBoard() {
 
 			response(fmt.Sprintf("tellics say     %s\n", name))
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
-		} else if cmd == "new" || cmd == "post" {
+		} else if cmd == "new" || cmd == "post" || cmd == "computer" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 			zg = Zimua(name, float64(maxTime))
 			response("Zimua Ready\n")
