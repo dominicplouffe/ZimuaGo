@@ -178,6 +178,7 @@ func xBoard() {
 
 		} else if cmd == "white" {
 			response("#Playing white\n")
+			color = "white"
 		} else if cmd == "black" {
 			color = "black"
 			response("#Playing black\n")
