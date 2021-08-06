@@ -177,6 +177,7 @@ func xBoard() {
 			response(fmt.Sprintf("%v\n", game.Position().String()))
 
 		} else if cmd == "white" {
+			color = "white"
 			response("#Playing white\n")
 		} else if cmd == "black" {
 			color = "black"
