@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2.3 mobility"
+var name = "Zimua v2.4 mobility"
 
 func main() {
 
@@ -263,19 +263,19 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	}
 
 	if !resultDone {
-		score := zg.pieceScoring(game.Position())
-		if game.Position().Turn() == chess.White {
-			if score > 1000 {
-				response("resign\n")
-			}
-		} else {
-			if score < -1000 {
-				response("resign\n")
-			}
-		}
+		// score := zg.pieceScoring(game.Position())
+		// if game.Position().Turn() == chess.White {
+		// 	if score > 1000 {
+		// 		response("resign\n")
+		// 	}
+		// } else {
+		// 	if score < -1000 {
+		// 		response("resign\n")
+		// 	}
+		// }
 
-		if zg.timeControl.timePerMove < 0 {
-			response("resign\n")
-		}
+		// if zg.timeControl.timePerMove < 0 {
+		// 	response("resign\n")
+		// }
 	}
 }
