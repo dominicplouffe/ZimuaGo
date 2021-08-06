@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2.4 mobility"
+var name = "Zimua v2.1 mobility"
 
 func main() {
 
@@ -205,7 +205,6 @@ func xBoard() {
 			if matched {
 				foundMove := false
 				for _, move := range game.ValidMoves() {
-					log.Println(move, cmd, move.String() == cmd)
 					if move.String() == cmd {
 						game.Move(move)
 						zg.inCheck = move.HasTag(chess.Check)
@@ -220,7 +219,7 @@ func xBoard() {
 				}
 
 				if game.Outcome() != chess.NoOutcome {
-					response("#game_over\n")
+					response("#result : draw {stalemate}\n")
 					// } else if !isForceGame {
 				} else {
 					xBoardPlay(game, &zg)

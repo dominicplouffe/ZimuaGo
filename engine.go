@@ -658,15 +658,15 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 
 		if allowLMR && moveCount >= 4 && !mv.capture && !mv.promotion {
 			isLMR = true
-			newDepth--
+			// newDepth--
 
-			if moveCount >= 6 {
-				newDepth--
-			}
+			// if moveCount >= 6 {
+			// 	newDepth--
+			// }
 
-			if moveCount >= 8 && depth >= 6 {
-				newDepth--
-			}
+			// if moveCount >= 8 && depth >= 6 {
+			// 	newDepth--
+			// }
 		}
 
 		newPos := pos.Update(&mv.move)
@@ -780,8 +780,6 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		ply++
 
 		siblings := make([]MoveScore, ply)
-		// fmt.Println(ply)
-		// fmt.Println(g.Position().Board().Draw())
 		res := zg.alphaBetaNM(g.Position(), ply, alpha, beta, ply, inCheck, false, siblings)
 
 		if math.Abs(float64(res.score)) == float64(checkmate) {
