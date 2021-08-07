@@ -705,12 +705,6 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			}
 		}
 
-		if newPos.MoveCount() < 80 {
-			if score == stalemate || score == -stalemate {
-				continue
-			}
-		}
-
 		newValue := max(value, score)
 
 		// fmt.Println("***", newValue, value)
