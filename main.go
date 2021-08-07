@@ -265,11 +265,11 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	if !resultDone {
 		score := zg.pieceScoring(game.Position())
 		if game.Position().Turn() == chess.White {
-			if score > 1000 {
+			if score > 1500 {
 				response("resign\n")
 			}
 		} else {
-			if score < -1000 {
+			if score < -1500 {
 				response("resign\n")
 			}
 		}
