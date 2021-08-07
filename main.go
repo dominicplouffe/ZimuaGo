@@ -263,19 +263,19 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	}
 
 	if !resultDone {
-		// score := zg.pieceScoring(game.Position())
-		// if game.Position().Turn() == chess.White {
-		// 	if score > 1000 {
-		// 		response("resign\n")
-		// 	}
-		// } else {
-		// 	if score < -1000 {
-		// 		response("resign\n")
-		// 	}
-		// }
+		score := zg.pieceScoring(game.Position())
+		if game.Position().Turn() == chess.White {
+			if score > 1000 {
+				response("resign\n")
+			}
+		} else {
+			if score < -1000 {
+				response("resign\n")
+			}
+		}
 
-		// if zg.timeControl.timePerMove < 0 {
-		// 	response("resign\n")
-		// }
+		if zg.timeControl.timePerMove < 0 {
+			response("resign\n")
+		}
 	}
 }
