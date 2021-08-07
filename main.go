@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2.3 mobility"
+var name = "Zimua v2.0 mobility"
 
 func main() {
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua_mob.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_mob_v2.0.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -144,7 +144,7 @@ func xBoard() {
 
 			response(fmt.Sprintf("tellics say     %s\n", name))
 			response("tellics say     (c) dplouffe Analytics Inc.\n")
-		} else if cmd == "new" || cmd == "post" {
+		} else if cmd == "new" || cmd == "post" || cmd == "computer" {
 			game = chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 			zg = Zimua(name, float64(maxTime))
 			response("Zimua Ready\n")
@@ -178,6 +178,7 @@ func xBoard() {
 
 		} else if cmd == "white" {
 			response("#Playing white\n")
+			color = "white"
 		} else if cmd == "black" {
 			color = "black"
 			response("#Playing black\n")
@@ -205,7 +206,6 @@ func xBoard() {
 			if matched {
 				foundMove := false
 				for _, move := range game.ValidMoves() {
-					log.Println(move, cmd, move.String() == cmd)
 					if move.String() == cmd {
 						game.Move(move)
 						zg.inCheck = move.HasTag(chess.Check)
@@ -220,7 +220,7 @@ func xBoard() {
 				}
 
 				if game.Outcome() != chess.NoOutcome {
-					response("#game_over\n")
+					response("#result : draw {stalemate}\n")
 					// } else if !isForceGame {
 				} else {
 					xBoardPlay(game, &zg)
@@ -265,11 +265,11 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 	if !resultDone {
 		score := zg.pieceScoring(game.Position())
 		if game.Position().Turn() == chess.White {
-			if score > 1000 {
+			if score > 1500 {
 				response("resign\n")
 			}
 		} else {
-			if score < -1000 {
+			if score < -1500 {
 				response("resign\n")
 			}
 		}
