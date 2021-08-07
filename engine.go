@@ -790,8 +790,8 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 			alpha = minEval
 			beta = maxEval
 		} else if res.score > alpha && res.score < beta {
-			alpha = res.score - 50
-			beta = res.score + 50
+			alpha = res.score - 250
+			beta = res.score + 250
 
 			if alpha < minEval {
 				alpha = minEval
