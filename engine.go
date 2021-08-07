@@ -705,8 +705,10 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 			}
 		}
 
-		if score == stalemate || score == -stalemate {
-			continue
+		if newPos.MoveCount() <= 80 {
+			if score == stalemate || score == -stalemate {
+				continue
+			}
 		}
 
 		newValue := max(value, score)
@@ -813,12 +815,11 @@ func (zg *ZimuaGame) search(g *chess.Game, inCheck bool) (bool, chess.Move) {
 		elapsed := t.Sub(start)
 
 		moves := ""
-		if siblings[0].move.String() != "a1a1" {
-			for i := len(siblings) - 1; i >= 0; i-- {
-				moves += siblings[i].move.String() + " "
-			}
-		} else {
-			res.score = checkmate
+		if siblings[0].move.String() == "a1a1" {
+			siblings[0] = res
+		}
+		for i := len(siblings) - 1; i >= 0; i-- {
+			moves += siblings[i].move.String() + " "
 		}
 
 		if g.Position().Turn() == chess.Black {
