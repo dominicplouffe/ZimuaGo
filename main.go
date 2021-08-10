@@ -252,13 +252,13 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 		response("#stalemate\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.FivefoldRepetition {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.InsufficientMaterial {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.DrawOffer {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	}
 
