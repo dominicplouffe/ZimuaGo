@@ -16,7 +16,7 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2.3 mobility"
+var name = "Zimua v2.5 mobility"
 
 func main() {
 
@@ -27,7 +27,7 @@ func main() {
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua_mob.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_mob_v2.5.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -252,13 +252,13 @@ func xBoardPlay(game *chess.Game, zg *ZimuaGame) {
 		response("#stalemate\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.FivefoldRepetition {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.InsufficientMaterial {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	} else if game.Position().Status() == chess.DrawOffer {
-		response("#result : draw {stalemate}\n")
+		response("#draw\n")
 		resultDone = true
 	}
 
