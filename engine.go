@@ -21,6 +21,8 @@ var checkmate = 99999999
 var stalemate = 88888888
 var doubleBishopBonus = 75
 var connectedRooksBonus = 25
+var kingCastlingPenalty = -50
+var queenCastlingPenalty = -40
 
 // MoveScore is used to store the moves importance when generating the list of moves
 type MoveScore struct {
@@ -68,17 +70,18 @@ func Zimua(name string, maxMinutes float64) ZimuaGame {
 	zg := ZimuaGame{
 		posPointsBlack: make(map[int][]int),
 		posPointsWhite: make(map[int][]int),
-		piecePoints:    make(map[int]int),
-		moveSearched:   0,
-		nilMove:        chess.Move{},
-		minValue:       -checkmate,
-		maxValue:       checkmate,
-		timeControl:    getTimeControl(maxMinutes),
-		name:           name,
-		moveCount:      0,
-		gamestage:      0,
-		transposiiton:  make(map[int]map[[16]byte]int),
-		killer:         make(map[[16]byte]MoveScore),
+
+		piecePoints:   make(map[int]int),
+		moveSearched:  0,
+		nilMove:       chess.Move{},
+		minValue:      -checkmate,
+		maxValue:      checkmate,
+		timeControl:   getTimeControl(maxMinutes),
+		name:          name,
+		moveCount:     0,
+		gamestage:     0,
+		transposiiton: make(map[int]map[[16]byte]int),
+		killer:        make(map[[16]byte]MoveScore),
 	}
 	zg.initGame()
 
@@ -112,6 +115,8 @@ func getTimeControl(totalTime float64) TimeControl {
 }
 
 func (zg ZimuaGame) initGame() {
+
+	// white Pawn
 	zg.posPointsWhite[0] = append(zg.posPointsWhite[0],
 		900, 900, 900, 900, 900, 900, 900, 900,
 		78, 83, 86, 73, 102, 82, 85, 90,
@@ -172,7 +177,19 @@ func (zg ZimuaGame) initGame() {
 		-4, 3, -14, -50, -57, -18, 13, 4,
 		17, 30, -3, -14, 6, -1, 40, 18,
 	)
+	// White King End
+	zg.posPointsWhite[6] = append(zg.posPointsWhite[6],
+		-50, -10, 0, 0, 0, 0, -10, -50,
+		-10, 0, 10, 10, 10, 10, 0, -10,
+		0, 10, 15, 15, 15, 15, 10, 0,
+		0, 10, 15, 20, 20, 15, 10, 0,
+		0, 10, 15, 20, 20, 15, 10, 0,
+		0, 10, 15, 15, 15, 15, 10, 0,
+		-10, 0, 10, 10, 10, 10, 0, -10,
+		-50, -10, 0, 0, 0, 0, -10, -50,
+	)
 
+	// Black Pawn
 	zg.posPointsBlack[0] = append(zg.posPointsBlack[0],
 		0, 0, 0, 0, 0, 0, 0, 0,
 		-10, 8, -7, -37, -36, -14, 3, -10,
@@ -234,6 +251,17 @@ func (zg ZimuaGame) initGame() {
 		-62, 12, -57, 44, -67, 28, 37, -31,
 		-32, 10, 55, 56, 56, 55, 10, 3,
 		4, 54, 47, -99, -99, 60, 83, -62,
+	)
+	// Black King End
+	zg.posPointsBlack[6] = append(zg.posPointsBlack[6],
+		-50, -10, 0, 0, 0, 0, -10, -50,
+		-10, 0, 10, 10, 10, 10, 0, -10,
+		0, 10, 15, 15, 15, 15, 10, 0,
+		0, 10, 15, 20, 20, 15, 10, 0,
+		0, 10, 15, 20, 20, 15, 10, 0,
+		0, 10, 15, 15, 15, 15, 10, 0,
+		-10, 0, 10, 10, 10, 10, 0, -10,
+		-50, -10, 0, 0, 0, 0, -10, -50,
 	)
 
 	zg.piecePoints[0] = 100   //PAWN
@@ -300,17 +328,17 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		}
 
 		if isCapture {
-			score += 100
+			score += 90
 		}
 		if isPromo {
 			score += 10
 		}
 
 		if kindSideCastle {
-			score += 0
+			score += 50
 		}
 		if queenSideCastle {
-			score += 0
+			score += 40
 		}
 
 		if pieceType == chess.King {
@@ -322,6 +350,7 @@ func (zg *ZimuaGame) getMoves(pos *chess.Position, depth int) []MoveScore {
 		} else if pieceType == chess.Queen {
 			score += 8
 		}
+
 		if pieceTo != chess.King {
 			pieceIdx := 0
 			if pieceTo == chess.Knight {
@@ -385,9 +414,10 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	var bbBlackBishop uint64 = bitboards[9]
 	var bbBlackKnight uint64 = bitboards[10]
 	var bbBlackPawn uint64 = bitboards[11]
-	// var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
-	// var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
+	var allWhiteBBs uint64 = bbWhiteKing | bbWhiteQueen | bbWhiteRook | bbWhiteBishop | bbWhiteKnight | bbWhitePawn
+	var allBlackBBs uint64 = bbBlackKing | bbBlackQueen | bbBlackRook | bbBlackBishop | bbBlackKnight | bbBlackPawn
 
+	fmt.Println(bbWhiteKing)
 	// _ = allWhiteBBs
 	// _ = allBlackBBs
 
@@ -406,112 +436,159 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	var bksqs []uint64
 
 	var sq uint64 = 1
+
+	// fmt.Println(zg.moveCount)
+
+	var whiteScoring = zg.posPointsWhite
+	var blackScoring = zg.posPointsBlack
+	// var mc = p.MoveCount()
+
 	for i := 0; i < 64; i++ {
 		isqr := bbWhitePawn & sq
 		if isqr > 0 {
 			wpsqs = append(wpsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[0]
-			piecePosWhite += zg.posPointsWhite[0][squareIndexes[sq]]
+			piecePosWhite += whiteScoring[0][squareIndexes[sq]]
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbWhiteKnight & sq
 		if isqr > 0 {
 			wnsqs = append(wnsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[1]
-			piecePosWhite += zg.posPointsWhite[1][squareIndexes[sq]]
+			piecePosWhite += whiteScoring[1][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbWhiteBishop & sq
 		if isqr > 0 {
 			wbsqs = append(wbsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[2]
-			piecePosWhite += zg.posPointsWhite[2][squareIndexes[sq]]
+			piecePosWhite += whiteScoring[2][squareIndexes[sq]]
 			bishopWhite++
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbWhiteRook & sq
 		if isqr > 0 {
 			wrsqs = append(wrsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[3]
-			piecePosWhite += zg.posPointsWhite[3][squareIndexes[sq]]
+			piecePosWhite += whiteScoring[3][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbWhiteQueen & sq
 		if isqr > 0 {
 			wqsqs = append(wqsqs, isqr)
 			pieceScoreWhite += zg.piecePoints[4]
-			piecePosWhite += zg.posPointsWhite[4][squareIndexes[sq]]
+			piecePosWhite += whiteScoring[4][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbWhiteKing & sq
 		if isqr > 0 {
 			wksqs = append(wksqs, isqr)
 			pieceScoreWhite += zg.piecePoints[5]
-			piecePosWhite += zg.posPointsWhite[5][squareIndexes[sq]]
+			if zg.gamestage == 2 {
+				piecePosWhite += whiteScoring[6][squareIndexes[sq]]
+			} else {
+				piecePosWhite += whiteScoring[5][squareIndexes[sq]]
+			}
+			sq = sq << 1
+			continue
 		}
 
 		// Black
-
 		isqr = bbBlackPawn & sq
 		if isqr > 0 {
 			bpsqs = append(bpsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[0]
-			piecePosBlack += zg.posPointsBlack[0][squareIndexes[sq]]
+			piecePosBlack += blackScoring[0][squareIndexes[sq]]
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbBlackKnight & sq
 		if isqr > 0 {
 			bnsqs = append(bnsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[1]
-			piecePosBlack += zg.posPointsBlack[1][squareIndexes[sq]]
+			piecePosBlack += blackScoring[1][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbBlackBishop & sq
 		if isqr > 0 {
 			bbsqs = append(bbsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[2]
-			piecePosBlack += zg.posPointsBlack[2][squareIndexes[sq]]
+			piecePosBlack += blackScoring[2][squareIndexes[sq]]
 			bishopBlack++
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbBlackRook & sq
 		if isqr > 0 {
 			brsqs = append(brsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[3]
-			piecePosBlack += zg.posPointsBlack[3][squareIndexes[sq]]
+			piecePosBlack += blackScoring[3][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbBlackQueen & sq
 		if isqr > 0 {
 			bqsqs = append(bqsqs, isqr)
 			pieceScoreBlack += zg.piecePoints[4]
-			piecePosBlack += zg.posPointsBlack[4][squareIndexes[sq]]
+			piecePosBlack += blackScoring[4][squareIndexes[sq]]
 			majorPieceCount++
+			sq = sq << 1
+			continue
 		}
 
 		isqr = bbBlackKing & sq
 		if isqr > 0 {
 			bksqs = append(bksqs, isqr)
 			pieceScoreBlack += zg.piecePoints[5]
-			piecePosBlack += zg.posPointsBlack[5][squareIndexes[sq]]
+			if zg.gamestage == 2 {
+				piecePosBlack += blackScoring[6][squareIndexes[sq]]
+			} else {
+				piecePosBlack +=
+					blackScoring[5][squareIndexes[sq]]
+				sq = sq << 1
+				continue
+			}
 		}
 
 		sq = sq << 1
 	}
 
-	if majorPieceCount <= 5 {
+	if majorPieceCount <= 7 {
 		zg.gamestage = 2
+		zg.piecePoints[1] = 350 // KNIGHT
+		zg.piecePoints[2] = 250 // BISHOP
 	}
+
+	wrmob, wrcon := getRookMobilitySquares(wrsqs, bbWhiteRook, allWhiteBBs, allBlackBBs)
+	brmob, brcon := getRookMobilitySquares(brsqs, bbBlackRook, allBlackBBs, allWhiteBBs)
 
 	scoreWhite := pieceScoreWhite + piecePosWhite
 	scoreBlack := pieceScoreBlack + piecePosBlack
+
+	scoreWhite += wrmob
+	scoreBlack += brmob
 
 	// queenMobility := 0
 	// if zg.timeControl.moveCount > 10 {
@@ -527,6 +604,31 @@ func (zg *ZimuaGame) pieceScoring(p *chess.Position) int {
 	if bishopBlack == 2 {
 		scoreBlack += doubleBishopBonus
 	}
+
+	if wrcon && zg.timeControl.moveCount < 20 {
+		scoreWhite += connectedRooksBonus
+	}
+	if brcon && zg.timeControl.moveCount < 20 {
+		scoreBlack += connectedRooksBonus
+	}
+
+	// whiteCastleKing := p.CastleRights().CanCastle(chess.White, chess.KingSide)
+	// whiteCastleQueen := p.CastleRights().CanCastle(chess.White, chess.KingSide)
+	// blackCastleKing := p.CastleRights().CanCastle(chess.Black, chess.KingSide)
+	// blackCastleQueen := p.CastleRights().CanCastle(chess.Black, chess.KingSide)
+
+	// if whiteCastleKing {
+	// 	scoreWhite -= kingCastlingPenalty
+	// }
+	// if whiteCastleQueen {
+	// 	scoreWhite -= queenCastlingPenalty
+	// }
+	// if blackCastleKing {
+	// 	scoreBlack -= kingCastlingPenalty
+	// }
+	// if blackCastleQueen {
+	// 	scoreBlack -= queenCastlingPenalty
+	// }
 
 	return scoreWhite - scoreBlack
 }
@@ -563,7 +665,8 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 		} else if pos.Status() == chess.ThreefoldRepetition {
 			score = stalemate
 		} else {
-			score = zg.qsearch(pos) // zg.pieceScoring(pos.Board())
+			score = zg.qsearch(pos)
+			// score = zg.pieceScoring(pos)
 		}
 
 		if pos.Turn() == chess.Black {
@@ -579,6 +682,7 @@ func (zg *ZimuaGame) alphaBetaNM(pos *chess.Position, depth int, alpha int, beta
 	if len(legalMoves) == 0 {
 
 		score := zg.qsearch(pos)
+		// score := zg.pieceScoring(pos)
 		if pos.Turn() == chess.Black {
 			score = score * -1
 		}

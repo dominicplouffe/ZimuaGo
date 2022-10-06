@@ -16,18 +16,17 @@ import (
 )
 
 var wrt = bufio.NewWriter(os.Stdout)
-var name = "Zimua v2.5 mobility"
+var name = "Zimua v2.6.1 mobility"
 
 func main() {
 
 	args := os.Args[1:]
-
 	if len(args) > 1 && args[1] == "-profile" {
 		defer profile.Start().Stop()
 	}
 	rand.Seed(time.Now().UnixNano())
 
-	f, err := os.OpenFile("zimua_mob_v2.5.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
+	f, err := os.OpenFile("zimua_mob_v2.6.1.log", os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
 	if err != nil {
 		log.Fatalf("error opening file: %v", err)
 	}
@@ -57,10 +56,11 @@ func response(value string) {
 
 func computerVSHuman() {
 
-	// fen, _ := chess.FEN("4k2B/5p2/1NnRp3/p5pp/8/5N2/PPP3PP/2K4n w - - 0 21")
+	// fen, _ := chess.FEN("r1b1k2r/pp1n1p2/8/4Pn1p/5B1P/3Qp3/PPP3P1/R3KB1R b kq - 1 18")
 	// game := chess.NewGame(fen, chess.UseNotation(chess.LongAlgebraicNotation{}))
 
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
+	fmt.Println(chess.King)
 	zg := Zimua("White", 30.0)
 
 	reader := bufio.NewReader(os.Stdin)
@@ -126,7 +126,7 @@ func computerVSComputer() {
 func xBoard() {
 
 	// isForceGame := false
-	maxTime := 2
+	maxTime := 30
 	color := "white"
 	game := chess.NewGame(chess.UseNotation(chess.LongAlgebraicNotation{}))
 	_ = game
