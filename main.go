@@ -66,9 +66,11 @@ func computerVSHuman() {
 	reader := bufio.NewReader(os.Stdin)
 
 	for {
-		zg.inCheck, _ = zg.search(game, zg.inCheck)
+		inCheck, mv := zg.search(game, zg.inCheck)
+		zg.inCheck = inCheck
 		fmt.Println(game.Position().Board().Draw())
 		fmt.Println(game.Position().String())
+		fmt.Printf("Move -> %s\n\n", mv.String())
 
 		foundMove := false
 		for {
